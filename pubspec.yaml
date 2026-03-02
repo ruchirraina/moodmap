@@ -1,7 +1,7 @@
 name: moodmap
 description: "An offline-first journaling app that uses AI to analyze daily entries, generating weekly insights and personalized mood gradients."
 publish_to: 'none'
-version: 0.0.1+1
+version: 0.0.5+1
 
 environment:
   sdk: ^3.11.0
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_native_splash: ^2.4.7
+  lottie: ^3.3.2
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +20,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  fonts:
+    - family: "Inter"
+      fonts:
+       - asset: "assets/fonts/Inter.ttf"
+
+  assets:
+    - "assets/native_splash_light.png"
+    - "assets/native_splash_dark.png"
+    - "assets/intro_logo/moodmap_logo_light.json"
+    - "assets/intro_logo/moodmap_logo_dark.json"

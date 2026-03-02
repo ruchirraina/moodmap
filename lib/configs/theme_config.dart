@@ -17,6 +17,7 @@ class ThemeConfig {
 
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
+    fontFamily: 'Inter',
     scaffoldBackgroundColor: _lightBg,
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
@@ -36,6 +37,7 @@ class ThemeConfig {
 
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,
+    fontFamily: 'Inter',
     scaffoldBackgroundColor: _darkBg,
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.dark,
