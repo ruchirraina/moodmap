@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moodmap/extensions/theme_extension.dart';
 
 class ThemeConfig {
   // Light Palette
@@ -54,4 +55,11 @@ class ThemeConfig {
       surfaceContainerHighest: const Color(0xFF323232),
     ),
   );
+
+  static TextStyle smallButtonTextTheme(BuildContext context) {
+    return context.textTheme.titleMedium!.copyWith(
+      color: context.colorScheme.onPrimary,
+      fontWeight: .bold,
+    );
+  }
 }

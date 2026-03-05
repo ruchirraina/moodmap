@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:lottie/lottie.dart';
+import 'package:moodmap/configs/theme_config.dart';
 import 'package:moodmap/extensions/theme_extension.dart';
+import 'package:moodmap/onboarding/info_pages/info_pages.dart';
 import 'dart:math' as math;
+import 'package:pretty_animated_buttons/pretty_animated_buttons.dart';
 
 class IntroSplash extends StatefulWidget {
   const IntroSplash({super.key});
@@ -38,7 +41,7 @@ class _IntroSplashState extends State<IntroSplash>
     );
   }
 
-  void _loadUIElements() async {
+  void _loadUIElements() {
     if (_lottieLogoController.value >= 0.80 && !_uiElementsVisible) {
       if (mounted) {
         setState(() {
@@ -49,12 +52,29 @@ class _IntroSplashState extends State<IntroSplash>
     }
   }
 
-  @override
-  void dispose() {
-    _lottieLogoController.removeListener(_loadUIElements);
-    _lottieLogoController.dispose();
-    _iconAnimController.dispose();
-    super.dispose();
+  void _unLoadUIElementsMoveNext() async {
+    if (_lottieLogoController.value <= 0.50 && _uiElementsVisible) {
+      if (mounted) {
+        setState(() {
+          _uiElementsVisible = false;
+        });
+      }
+
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                InfoPages(),
+            transitionDuration: const Duration(milliseconds: 500),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    FadeTransition(opacity: animation, child: child),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildBackgroundIcon({
@@ -97,6 +117,20 @@ class _IntroSplashState extends State<IntroSplash>
     );
   }
 
+  void _getStarted() {
+    _lottieLogoController.removeListener(_loadUIElements);
+    _lottieLogoController.addListener(_unLoadUIElementsMoveNext);
+    _lottieLogoController.reverse();
+  }
+
+  @override
+  void dispose() {
+    _lottieLogoController.removeListener(_unLoadUIElementsMoveNext);
+    _lottieLogoController.dispose();
+    _iconAnimController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,15 +138,18 @@ class _IntroSplashState extends State<IntroSplash>
         children: [
           Align(
             alignment: .center,
-            child: Lottie.asset(
-              (context.theme.brightness == .light)
-                  ? 'assets/intro_logo/moodmap_logo_light.json'
-                  : 'assets/intro_logo/moodmap_logo_dark.json',
-              controller: _lottieLogoController,
-              onLoaded: (compostion) {
-                _lottieLogoController.duration = compostion.duration;
-                _lottieLogoController.forward();
-              },
+            child: FractionallySizedBox(
+              widthFactor: 0.85,
+              child: Lottie.asset(
+                (context.theme.brightness == .light)
+                    ? 'assets/intro_logo/moodmap_logo_light.json'
+                    : 'assets/intro_logo/moodmap_logo_dark.json',
+                controller: _lottieLogoController,
+                onLoaded: (compostion) {
+                  _lottieLogoController.duration = compostion.duration;
+                  _lottieLogoController.forward();
+                },
+              ),
             ),
           ),
 
@@ -156,24 +193,22 @@ class _IntroSplashState extends State<IntroSplash>
             icon: Icons.edit_outlined,
           ),
 
-          AnimatedOpacity(
-            opacity: _uiElementsVisible ? 1 : 0,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.fastOutSlowIn,
-            child: Align(
-              alignment: .bottomCenter,
-              child: Padding(
-                padding: const .symmetric(vertical: 32),
-                child: FilledButton(
-                  onPressed: () {},
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(200, 50),
-                  ),
-                  child: Text(
-                    'Get Started',
-                    style: context.textTheme.titleMedium!.copyWith(
-                      color: context.colorScheme.onPrimary,
-                      fontWeight: .bold,
+          SafeArea(
+            child: AnimatedOpacity(
+              opacity: _uiElementsVisible ? 1 : 0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.fastOutSlowIn,
+              child: Align(
+                alignment: .bottomCenter,
+                child: Padding(
+                  padding: const .symmetric(vertical: 32),
+                  child: PrettyWaveButton(
+                    onPressed: _getStarted,
+                    backgroundColor: context.colorScheme.primary,
+                    borderRadius: 20,
+                    child: Text(
+                      'Get Started',
+                      style: ThemeConfig.smallButtonTextTheme(context),
                     ),
                   ),
                 ),

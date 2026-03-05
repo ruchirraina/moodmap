@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   flutter_native_splash: ^2.4.7
   lottie: ^3.3.2
+  pretty_animated_buttons: ^0.0.2
+  smooth_page_indicator: ^2.0.1
 
 dev_dependencies:
   flutter_test:
