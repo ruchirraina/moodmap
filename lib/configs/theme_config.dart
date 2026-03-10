@@ -48,7 +48,7 @@ class ThemeConfig {
       tertiary: _darkTertiary,
       error: _darkError,
       surface: _darkBg,
-      surfaceContainerLowest: const Color(0xFF000000), // Pure black
+      surfaceContainerLowest: const Color(0xFF000000),
       surfaceContainerLow: const Color(0xFF1E1E1E),
       surfaceContainer: const Color(0xFF242424),
       surfaceContainerHigh: const Color(0xFF2A2A2A),
