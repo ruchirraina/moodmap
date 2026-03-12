@@ -1,39 +1,48 @@
+// onboarding screens in PageView and cool indicators at bottom with anim
 import 'package:flutter/material.dart';
 import 'package:moodmap/extensions/theme_extension.dart';
-import 'package:moodmap/onboarding/info_pages/info_pg1.dart';
-import 'package:moodmap/onboarding/info_pages/info_pg2.dart';
-import 'package:moodmap/onboarding/info_pages/info_pg3.dart';
+import 'package:moodmap/screens/onboarding/onb_screen1.dart';
+import 'package:moodmap/screens/onboarding/onb_screen2.dart';
+import 'package:moodmap/screens/onboarding/onb_screen3.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class InfoPages extends StatefulWidget {
-  const InfoPages({super.key});
+class OnbScreens extends StatefulWidget {
+  const OnbScreens({super.key});
 
   @override
-  State<InfoPages> createState() => _InfoPagesState();
+  State<OnbScreens> createState() => _OnbScreensState();
 }
 
-class _InfoPagesState extends State<InfoPages> {
+class _OnbScreensState extends State<OnbScreens> {
   final PageController _pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
+    // feels the sensible way to do things
     return Stack(
       children: [
         PageView(
           controller: _pageController,
-          children: [InfoPg1(), InfoPg2(), InfoPg3()],
+          // the three screens
+          children: [
+            const OnbScreen1(),
+            const OnbScreen2(),
+            const OnbScreen3(),
+          ],
         ),
-        // indicators
+        // indicators with anim | safe area cuz gotta protect it
         SafeArea(
           child: Align(
-            alignment: .bottomCenter,
+            alignment: .bottomCenter, // feels best place
             child: Padding(
-              padding: const .symmetric(vertical: 32),
+              padding: const .symmetric(vertical: 32), // also feels right
               child: SmoothPageIndicator(
                 controller: _pageController,
                 count: 3,
+                // the anim when page changes
                 effect: WormEffect(
                   dotColor: context.colorScheme.onSurface.withValues(
+                    // feels right
                     alpha: (context.theme.brightness == .light) ? 0.25 : 0.5,
                   ),
                   activeDotColor: context.colorScheme.primary,

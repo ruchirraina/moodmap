@@ -1,6 +1,6 @@
+// for improving code readability
 import 'package:flutter/material.dart';
 
-// for improvind code readability
 extension ThemeExtension on BuildContext {
   ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => Theme.of(this).textTheme;

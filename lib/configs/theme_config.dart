@@ -1,3 +1,4 @@
+// light and dark theme definition
 import 'package:flutter/material.dart';
 import 'package:moodmap/extensions/theme_extension.dart';
 
@@ -56,6 +57,7 @@ class ThemeConfig {
     ),
   );
 
+  // for any small button(filled/elevated/outlined/tonal)
   static TextStyle smallButtonTextTheme(BuildContext context) {
     return context.textTheme.titleMedium!.copyWith(
       color: context.colorScheme.onPrimary,

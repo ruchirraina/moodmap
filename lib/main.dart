@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:moodmap/configs/theme_config.dart';
-import 'package:moodmap/onboarding/intro_splash.dart';
+import 'package:moodmap/screens/intro_splash.dart';
 
-void main() => runApp(const MainApp());
+// app starts here duh
+void main() {
+  WidgetsFlutterBinding.ensureInitialized(); // ensuring widget binding init
+  // DeviceOrientation set to only portraitUp
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp(const MainApp());
+}
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -10,10 +17,10 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, // remove the debug banner
       theme: ThemeConfig.lightTheme,
       darkTheme: ThemeConfig.darkTheme,
-      home: IntroSplash(),
+      home: IntroSplash(), // first screen
     );
   }
 }
