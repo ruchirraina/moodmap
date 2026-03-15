@@ -1,6 +1,6 @@
 // light and dark theme definition
 import 'package:flutter/material.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
+import 'package:moodmap/theme/theme_extension.dart';
 
 class ThemeConfig {
   // Light Palette

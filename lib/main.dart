@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:moodmap/configs/theme_config.dart';
-import 'package:moodmap/screens/intro_splash.dart';
+import 'package:moodmap/theme/theme_config.dart';
+import 'package:moodmap/routing/route_config.dart';
 
 // app starts here duh
 void main() {
@@ -16,11 +16,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      title: 'MoodMap',
       debugShowCheckedModeBanner: false, // remove the debug banner
       theme: ThemeConfig.lightTheme,
       darkTheme: ThemeConfig.darkTheme,
-      home: IntroSplash(), // first screen
+      routerConfig: router,
     );
   }
 }

@@ -1,7 +1,7 @@
 // second onboarding screen
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
+import 'package:moodmap/theme/theme_extension.dart';
 
 class OnbScreen2 extends StatelessWidget {
   const OnbScreen2({super.key});

@@ -1,9 +1,9 @@
 // third onboarding screen | also has buttons to go to auth screen
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
-import 'package:moodmap/configs/theme_config.dart';
-import 'package:moodmap/screens/auth/auth_ui.dart';
+import 'package:moodmap/theme/theme_extension.dart';
+import 'package:moodmap/theme/theme_config.dart';
 
 class OnbScreen3 extends StatelessWidget {
   const OnbScreen3({super.key});
@@ -14,30 +14,8 @@ class OnbScreen3 extends StatelessWidget {
     // auth screen loads sign up or sign in page and default is sign up screen
     void navToAuth({bool loadSignUp = true}) {
       // a boom in your face type anim nav
-      // pushReplacement bc ux wise why option to return?
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              AuthUi(loadSignUp: loadSignUp),
-          // half a second feels right
-          transitionDuration: const Duration(milliseconds: 500),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            // create a CurvedAnimation
-            final curvedAnimation = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutExpo,
-            );
-            // a ScaleTransition by CurvedAnimation
-            return ScaleTransition(
-              scale: Tween<double>(
-                begin: 0.0,
-                end: 1.0,
-              ).animate(curvedAnimation),
-              child: child,
-            );
-          },
-        ),
-      );
+      // router go bc ux wise why option to return?
+      context.go('/auth?signup=$loadSignUp', extra: 'scale_anim');
     }
 
     return Scaffold(

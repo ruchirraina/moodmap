@@ -1,6 +1,6 @@
 // onboarding screens in PageView and cool indicators at bottom with anim
 import 'package:flutter/material.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
+import 'package:moodmap/theme/theme_extension.dart';
 import 'package:moodmap/screens/onboarding/onb_screen1.dart';
 import 'package:moodmap/screens/onboarding/onb_screen2.dart';
 import 'package:moodmap/screens/onboarding/onb_screen3.dart';

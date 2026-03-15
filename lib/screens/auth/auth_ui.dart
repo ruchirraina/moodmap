@@ -1,7 +1,8 @@
 // auth ui screen loads first a sign up screen/sign up screen
 // uses PageView -> left sign up right sign in
 import 'package:flutter/material.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
+import 'package:moodmap/theme/theme_extension.dart';
+import 'package:moodmap/screens/auth/input_validators.dart';
 
 class AuthUi extends StatefulWidget {
   final bool loadSignUp; // load sign up/sign in?
@@ -30,7 +31,7 @@ class _AuthUiState extends State<AuthUi> {
   }
 
   // helper function to help in switching b/w sign up <-> sign in
-  void switchAuthMode() {
+  void _switchAuthMode() {
     // go to sign in screen if at sign up screen
     if (_pageController.page == 0) {
       _pageController.animateToPage(
@@ -48,10 +49,15 @@ class _AuthUiState extends State<AuthUi> {
     }
   }
 
+  // two global keys for form validation
+  final GlobalKey<FormState> _signUpFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _signInFormKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     // to check if keyboard is up
     bool isisKeyboardUp = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       // gotta protect so ui don't get cut
       body: SafeArea(
@@ -98,31 +104,52 @@ class _AuthUiState extends State<AuthUi> {
           Expanded(
             child: SingleChildScrollView(
               // regular column works here too
-              child: Column(
-                crossAxisAlignment: .start, // feels right
-                children: [
-                  // a proper gap
-                  const SizedBox(height: 32),
-                  // email area
-                  const Text('Email'),
-                  // a small gap
-                  const SizedBox(height: 4),
-                  TextFormField(
-                    style: context.textTheme.bodyMedium,
-                    // appropriate
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: .all(.circular(16)),
+              child: Form(
+                // conditional form key
+                key: loadSignUp ? _signUpFormKey : _signInFormKey,
+                child: Column(
+                  crossAxisAlignment: .start, // feels right
+                  children: [
+                    // a proper gap
+                    const SizedBox(height: 32),
+                    // email area
+                    const Text('Email'),
+                    // a small gap
+                    const SizedBox(height: 4),
+                    TextFormField(
+                      style: context.textTheme.bodyMedium,
+                      // appropriate
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: .all(.circular(16)),
+                        ),
                       ),
+                      validator: (value) => emailInputValidator(value),
                     ),
-                  ),
 
-                  // only for sign up screen -> Name Field
-                  if (loadSignUp) ...[
+                    // only for sign up screen -> Name Field
+                    if (loadSignUp) ...[
+                      // a proper gap
+                      const SizedBox(height: 16),
+                      const Text('Your Name'),
+                      // a small gap
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        style: context.textTheme.bodyMedium,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: .all(.circular(16)),
+                          ),
+                        ),
+                        validator: (value) => nameInputValidator(value),
+                      ),
+                    ],
+
                     // a proper gap
                     const SizedBox(height: 16),
-                    const Text('Your Name'),
+                    // conditional TextFormField top text
+                    Text((loadSignUp) ? 'Create Password' : 'Password'),
                     // a small gap
                     const SizedBox(height: 4),
                     TextFormField(
@@ -132,107 +159,102 @@ class _AuthUiState extends State<AuthUi> {
                           borderRadius: .all(.circular(16)),
                         ),
                       ),
+                      validator: (value) =>
+                          passwordInputValidator(value, loadSignUp),
                     ),
-                  ],
 
-                  // a proper gap
-                  const SizedBox(height: 16),
-                  // conditional TextFormField top text
-                  Text((loadSignUp) ? 'Create Password' : 'Password'),
-                  // a small gap
-                  const SizedBox(height: 4),
-                  TextFormField(
-                    style: context.textTheme.bodyMedium,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: .all(.circular(16)),
+                    // only for sign in screen -> forgot password button
+                    if (!loadSignUp) ...[
+                      // a small gap
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () {}, // non functional rn
+                        child: Text(
+                          'Forgot Password?',
+                          // feels right
+                          style: context.textTheme.bodySmall!.copyWith(
+                            color: context.colorScheme.tertiary,
+                            fontWeight: .bold,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    ],
 
-                  // only for sign in screen -> forgot password button
-                  if (!loadSignUp) ...[
-                    // a small gap
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () {}, // non functional rn
-                      child: Text(
-                        'Forgot Password?',
-                        // feels right
-                        style: context.textTheme.bodySmall!.copyWith(
-                          color: context.colorScheme.tertiary,
-                          fontWeight: .bold,
+                    // a medium gap
+                    const SizedBox(height: 24),
+                    // continue button
+                    SizedBox(
+                      // height consistency with other button
+                      height: 50,
+                      width: .infinity, // a wide button
+                      child: FilledButton(
+                        // just performs input validation for now
+                        onPressed: () {
+                          if (loadSignUp) {
+                            _signUpFormKey.currentState?.validate();
+                          } else {
+                            _signInFormKey.currentState?.validate();
+                          }
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: context.colorScheme.secondary,
+                          // borderRadius consistency
+                          shape: RoundedRectangleBorder(
+                            borderRadius: .all(.circular(16)),
+                          ),
+                        ),
+                        child: Text(
+                          'Continue',
+                          style: context.textTheme.bodyLarge!.copyWith(
+                            color: context.colorScheme.onSecondary,
+                            fontWeight: .bold,
+                          ),
                         ),
                       ),
                     ),
-                  ],
 
-                  // a medium gap
-                  const SizedBox(height: 24),
-                  // continue button
-                  SizedBox(
-                    // height consistency with other button
-                    height: 50,
-                    width: .infinity, // a wide button
-                    child: FilledButton(
-                      onPressed: () {}, // non functional rn
-                      style: FilledButton.styleFrom(
-                        backgroundColor: context.colorScheme.secondary,
-                        // borderRadius consistency
-                        shape: RoundedRectangleBorder(
-                          borderRadius: .all(.circular(16)),
-                        ),
-                      ),
-                      child: Text(
-                        'Continue',
-                        style: context.textTheme.bodyLarge!.copyWith(
-                          color: context.colorScheme.onSecondary,
-                          fontWeight: .bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // a medium gap | also a buffer between keyboard and continue
-                  const SizedBox(height: 16),
-                  // hide if keyboard
-                  AnimatedSwitcher(
-                    // pretty quick
-                    duration: const Duration(milliseconds: 250),
-                    // feel right
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeOut,
-                    child: (!isKeyboardUp)
-                        // switch to sign in/sign up
-                        ? Row(
-                            mainAxisAlignment: .center, // feels right
-                            children: [
-                              Text(
-                                (loadSignUp)
-                                    ? 'Already have an account?'
-                                    : 'New here?',
-                                // feels right
-                                style: context.textTheme.bodySmall,
-                              ),
-                              TextButton(
-                                onPressed: switchAuthMode,
-                                // make it feel part of text
-                                style: TextButton.styleFrom(padding: .all(0)),
-                                child: Text(
-                                  // conditional button text
-                                  (loadSignUp) ? 'Sign In' : 'Sign Up',
+                    // a medium gap | also a buffer between keyboard and continue
+                    const SizedBox(height: 16),
+                    // hide if keyboard
+                    AnimatedSwitcher(
+                      // pretty quick
+                      duration: const Duration(milliseconds: 250),
+                      // feel right
+                      switchInCurve: Curves.easeOut,
+                      switchOutCurve: Curves.easeOut,
+                      child: (!isKeyboardUp)
+                          // switch to sign in/sign up
+                          ? Row(
+                              mainAxisAlignment: .center, // feels right
+                              children: [
+                                Text(
+                                  (loadSignUp)
+                                      ? 'Already have an account?'
+                                      : 'New here?',
                                   // feels right
-                                  style: context.textTheme.bodySmall!.copyWith(
-                                    color: context.colorScheme.primary,
-                                    fontWeight: .bold,
+                                  style: context.textTheme.bodySmall,
+                                ),
+                                TextButton(
+                                  onPressed: _switchAuthMode,
+                                  // make it feel part of text
+                                  style: TextButton.styleFrom(padding: .all(0)),
+                                  child: Text(
+                                    // conditional button text
+                                    (loadSignUp) ? 'Sign In' : 'Sign Up',
+                                    // feels right
+                                    style: context.textTheme.bodySmall!
+                                        .copyWith(
+                                          color: context.colorScheme.primary,
+                                          fontWeight: .bold,
+                                        ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(), // better than other ways
-                  ),
-                ],
+                              ],
+                            )
+                          : const SizedBox.shrink(), // better than other ways
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

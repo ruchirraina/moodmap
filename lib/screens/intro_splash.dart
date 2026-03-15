@@ -1,10 +1,10 @@
 // intro splash sequence | first screen
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:moodmap/configs/theme_config.dart';
-import 'package:moodmap/extensions/theme_extension.dart';
-import 'package:moodmap/screens/onboarding/onb_screens.dart';
+import 'package:moodmap/theme/theme_config.dart';
+import 'package:moodmap/theme/theme_extension.dart';
 import 'dart:math' as math;
 import 'package:pretty_animated_buttons/pretty_animated_buttons.dart';
 
@@ -72,19 +72,8 @@ class _IntroSplashState extends State<IntroSplash>
       await Future.delayed(const Duration(milliseconds: 600));
       if (mounted) {
         // a FadeTransition navigation
-        // pushReplacement bc ux wise why option to return?
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                OnbScreens(),
-            // half a second feels right
-            transitionDuration: const Duration(milliseconds: 500),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) =>
-                    FadeTransition(opacity: animation, child: child),
-          ),
-        );
+        // router go bc ux wise why option to return?
+        context.go('/onboarding');
       }
     }
   }
