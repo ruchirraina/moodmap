@@ -5,17 +5,24 @@ import 'package:lottie/lottie.dart';
 import 'package:moodmap/theme/theme_extension.dart';
 import 'package:moodmap/theme/theme_config.dart';
 
-class OnbScreen3 extends StatelessWidget {
+class OnbScreen3 extends StatefulWidget {
   const OnbScreen3({super.key});
 
+  @override
+  State<OnbScreen3> createState() => _OnbScreen3State();
+}
+
+class _OnbScreen3State extends State<OnbScreen3> {
   @override
   Widget build(BuildContext context) {
     // function handling to auth nav
     // auth screen loads sign up or sign in page and default is sign up screen
-    void navToAuth({bool loadSignUp = true}) {
+    void navToAuth({bool loadSignUp = true}) async {
       // a boom in your face type anim nav
       // router go bc ux wise why option to return?
-      context.go('/auth?signup=$loadSignUp', extra: 'scale_anim');
+      if (context.mounted) {
+        context.go('/auth?signup=$loadSignUp', extra: 'scale_anim');
+      }
     }
 
     return Scaffold(

@@ -1,8 +1,11 @@
 // auth ui screen loads first a sign up screen/sign up screen
 // uses PageView -> left sign up right sign in
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moodmap/theme/theme_extension.dart';
 import 'package:moodmap/screens/auth/input_validators.dart';
+import 'package:moodmap/screens/auth/auth_logic.dart';
 
 class AuthUi extends StatefulWidget {
   final bool loadSignUp; // load sign up/sign in?
@@ -14,12 +17,185 @@ class AuthUi extends StatefulWidget {
 }
 
 class _AuthUiState extends State<AuthUi> {
+  // sign up email controller
+  final TextEditingController _emailControllerSignUp = TextEditingController();
+  // sign up email focus node
+  final FocusNode _emailFocusNodeSignUp = FocusNode();
+
+  // sign in email controller
+  final TextEditingController _emailControllerSignIn = TextEditingController();
+  // sign in email focus node
+  final FocusNode _emailFocusNodeSignIn = FocusNode();
+
+  // name controller (sign up only)
+  final TextEditingController _nameController = TextEditingController();
+  // name focus node (sign up only)
+  final FocusNode _nameFocusNode = FocusNode();
+
+  // sign up password controller
+  final TextEditingController _passwordControllerSignUp =
+      TextEditingController();
+  // sign up password focus node
+  final FocusNode _passwordFocusNodeSignUp = FocusNode();
+
+  // sign in password controller
+  final TextEditingController _passwordControllerSignIn =
+      TextEditingController();
+  // sign in password focus node
+  final FocusNode _passwordFocusNodeSignIn = FocusNode();
+
+  // clear sign up screen when focus is on sign up screen + clear errs
+  void _onSignUpFieldFocus() {
+    if (_emailFocusNodeSignUp.hasFocus ||
+        _nameFocusNode.hasFocus ||
+        _passwordFocusNodeSignUp.hasFocus) {
+      _emailControllerSignIn.clear();
+      _passwordControllerSignIn.clear();
+
+      setState(() {
+        _firebaseError = null;
+      });
+      ScaffoldMessenger.of(context).clearSnackBars();
+    }
+  }
+
+  // clear sign up screen when focus is on sign in screen + clear errs
+  void _onSignInFieldFocus() {
+    if (_emailFocusNodeSignIn.hasFocus || _passwordFocusNodeSignIn.hasFocus) {
+      _emailControllerSignUp.clear();
+      _nameController.clear();
+      _passwordControllerSignUp.clear();
+
+      setState(() {
+        _firebaseError = null;
+      });
+      ScaffoldMessenger.of(context).clearSnackBars();
+    }
+  }
+
+  // toggles loading state
+  bool _isLoading = false;
+  // recieve err msg if occurs
+  String? _firebaseError;
+
+  // a SnackBar config for displaying err msgs
+  SnackBar _errorSnackBar(String errorMessage) => SnackBar(
+    behavior: .floating,
+    // feels right utilising empty space
+    margin: .only(bottom: 200, left: 16, right: 16),
+    backgroundColor: context.colorScheme.errorContainer,
+    // feels right
+    dismissDirection: .horizontal,
+    persist: true, // stays
+    content: Text(
+      errorMessage,
+      // feels right
+      style: context.textTheme.labelMedium!.copyWith(
+        color: context.colorScheme.onErrorContainer,
+        fontWeight: .bold,
+      ),
+    ),
+  );
+
+  // signup continue handle
+  void _onContinueSignUp() {
+    // clear past errors
+    ScaffoldMessenger.of(context).clearSnackBars();
+    setState(() {
+      _firebaseError = null;
+    });
+    // if input validation passed then
+    if (_signUpFormKey.currentState?.validate() ?? false) {
+      setState(() {
+        // good ux to hide if was not
+        _signUpObscurePassword = true;
+        // toggle loading state
+        _isLoading = true;
+      });
+      // attempt sign up
+      AuthLogic.signUpWithEmailPass(
+        email: _emailControllerSignUp.text,
+        password: _passwordControllerSignUp.text,
+        name: _nameController.text,
+      ).then((error) {
+        if (mounted) {
+          // no error good to go
+          if (error == null) {
+            context.go('/home');
+          } // iff err for snackbar
+          else if (!isErrorNotForSnackBar(error)) {
+            // toggle loading state
+            setState(() {
+              _isLoading = false;
+            });
+            // show SnackBar msg
+            ScaffoldMessenger.of(context).showSnackBar(_errorSnackBar(error));
+          } // for other errors display as field errors
+          else {
+            setState(() {
+              _firebaseError = error;
+              _isLoading = false;
+            });
+          }
+        }
+      });
+    }
+  }
+
+  // signin continue handle
+  void _onContinueSignIn() {
+    // clear past errors
+    ScaffoldMessenger.of(context).clearSnackBars();
+    setState(() {
+      _firebaseError = null;
+    });
+    // if input validation passed then
+    if (_signInFormKey.currentState?.validate() ?? false) {
+      setState(() {
+        // good ux to hide if was not
+        _signInObscurePassword = true;
+        // toggle loading state
+        _isLoading = true;
+      });
+      // attempt sign in
+      AuthLogic.signInWithEmailPass(
+        email: _emailControllerSignIn.text,
+        password: _passwordControllerSignIn.text,
+      ).then((error) {
+        if (mounted) {
+          // no error good to go
+          if (error == null) {
+            context.go('/home');
+          } // iff err for snackbar
+          else if (!isErrorNotForSnackBar(error)) {
+            setState(() {
+              _isLoading = false;
+            });
+            // show SnackBar msg
+            ScaffoldMessenger.of(context).showSnackBar(_errorSnackBar(error));
+          } // for other errors display as field errors
+          else {
+            setState(() {
+              _firebaseError = error;
+              _isLoading = false;
+            });
+          }
+        }
+      });
+    }
+  }
+
   late final PageController _pageController; // PageView controller
 
   @override
   void initState() {
     // load the right page
     _pageController = PageController(initialPage: widget.loadSignUp ? 0 : 1);
+    _emailFocusNodeSignUp.addListener(_onSignUpFieldFocus);
+    _emailFocusNodeSignIn.addListener(_onSignInFieldFocus);
+    _nameFocusNode.addListener(_onSignUpFieldFocus);
+    _passwordFocusNodeSignUp.addListener(_onSignUpFieldFocus);
+    _passwordFocusNodeSignIn.addListener(_onSignInFieldFocus);
     super.initState();
   }
 
@@ -27,11 +203,26 @@ class _AuthUiState extends State<AuthUi> {
   @override
   void dispose() {
     super.dispose();
+    _emailControllerSignUp.dispose();
+    _emailFocusNodeSignUp.dispose();
+    _emailControllerSignIn.dispose();
+    _emailFocusNodeSignIn.dispose();
+    _nameController.dispose();
+    _nameFocusNode.dispose();
+    _passwordControllerSignUp.dispose();
+    _passwordFocusNodeSignUp.dispose();
+    _passwordControllerSignIn.dispose();
+    _passwordFocusNodeSignIn.dispose();
     _pageController.dispose();
   }
 
   // helper function to help in switching b/w sign up <-> sign in
   void _switchAuthMode() {
+    // clear past errors
+    ScaffoldMessenger.of(context).clearSnackBars();
+    setState(() {
+      _firebaseError = null;
+    });
     // go to sign in screen if at sign up screen
     if (_pageController.page == 0) {
       _pageController.animateToPage(
@@ -53,10 +244,14 @@ class _AuthUiState extends State<AuthUi> {
   final GlobalKey<FormState> _signUpFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _signInFormKey = GlobalKey<FormState>();
 
+  // state for password obscurity for each form
+  bool _signUpObscurePassword = true;
+  bool _signInObscurePassword = true;
+
   @override
   Widget build(BuildContext context) {
     // to check if keyboard is up
-    bool isisKeyboardUp = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardUp = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       // gotta protect so ui don't get cut
@@ -66,9 +261,9 @@ class _AuthUiState extends State<AuthUi> {
           physics: NeverScrollableScrollPhysics(), // no scroll
           children: [
             // sign up screen
-            _buildAuthPage(isKeyboardUp: isisKeyboardUp, loadSignUp: true),
+            _buildAuthPage(isKeyboardUp: isKeyboardUp, loadSignUp: true),
             // sign in screen
-            _buildAuthPage(isKeyboardUp: isisKeyboardUp, loadSignUp: false),
+            _buildAuthPage(isKeyboardUp: isKeyboardUp, loadSignUp: false),
           ],
         ),
       ),
@@ -82,263 +277,353 @@ class _AuthUiState extends State<AuthUi> {
   }) {
     return Padding(
       padding: const .all(16), // feels right
-      // a regular column works
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // feels right
-        children: [
-          Text(
-            // conditional top text
-            (loadSignUp) ? 'Sign Up' : 'Sign In',
-            style: context.textTheme.displayLarge!.copyWith(
-              color: context.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'PlayfairDisplay',
+      // when tap outside form fields
+      child: GestureDetector(
+        behavior: .opaque,
+        onTap: () {
+          if (loadSignUp) {
+            _signUpObscurePassword = true;
+          } else {
+            _signInObscurePassword = true;
+          }
+          FocusScope.of(context).unfocus();
+        },
+        // a regular column works
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, // feels right
+          children: [
+            Text(
+              // conditional top text
+              (loadSignUp) ? 'Sign Up' : 'Sign In',
+              style: context.textTheme.displayLarge!.copyWith(
+                color: context.colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'PlayfairDisplay',
+              ),
             ),
-          ),
-          // a small gap
-          const SizedBox(height: 16),
-          // conditional subtitle
-          Text((loadSignUp) ? 'Create an account to begin.' : 'Welcome Back!'),
+            // a small gap
+            const SizedBox(height: 16),
+            // conditional subtitle
+            Text(
+              (loadSignUp) ? 'Create an account to begin.' : 'Welcome Back!',
+            ),
 
-          // scrollable section even if cut off by keyboard
-          Expanded(
-            child: SingleChildScrollView(
-              // regular column works here too
-              child: Form(
-                // conditional form key
-                key: loadSignUp ? _signUpFormKey : _signInFormKey,
-                child: Column(
-                  crossAxisAlignment: .start, // feels right
-                  children: [
-                    // a proper gap
-                    const SizedBox(height: 32),
-                    // email area
-                    const Text('Email'),
-                    // a small gap
-                    const SizedBox(height: 4),
-                    TextFormField(
-                      style: context.textTheme.bodyMedium,
-                      // appropriate
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: .all(.circular(16)),
-                        ),
-                      ),
-                      validator: (value) => emailInputValidator(value),
-                    ),
-
-                    // only for sign up screen -> Name Field
-                    if (loadSignUp) ...[
+            // scrollable section even if cut off by keyboard
+            Expanded(
+              child: SingleChildScrollView(
+                // regular column works here too
+                child: Form(
+                  // conditional form key
+                  key: loadSignUp ? _signUpFormKey : _signInFormKey,
+                  child: Column(
+                    crossAxisAlignment: .start, // feels right
+                    children: [
                       // a proper gap
-                      const SizedBox(height: 16),
-                      const Text('Your Name'),
+                      const SizedBox(height: 32),
+                      // email area
+                      const Text('Email'),
                       // a small gap
                       const SizedBox(height: 4),
                       TextFormField(
+                        controller: loadSignUp
+                            ? _emailControllerSignUp
+                            : _emailControllerSignIn,
+                        focusNode: loadSignUp
+                            ? _emailFocusNodeSignUp
+                            : _emailFocusNodeSignIn,
+                        enabled: !_isLoading,
+                        autovalidateMode: .onUserInteraction,
                         style: context.textTheme.bodyMedium,
+                        // appropriate
+                        keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: .all(.circular(16)),
                           ),
                         ),
-                        validator: (value) => nameInputValidator(value),
-                      ),
-                    ],
-
-                    // a proper gap
-                    const SizedBox(height: 16),
-                    // conditional TextFormField top text
-                    Text((loadSignUp) ? 'Create Password' : 'Password'),
-                    // a small gap
-                    const SizedBox(height: 4),
-                    TextFormField(
-                      style: context.textTheme.bodyMedium,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: .all(.circular(16)),
-                        ),
-                      ),
-                      validator: (value) =>
-                          passwordInputValidator(value, loadSignUp),
-                    ),
-
-                    // only for sign in screen -> forgot password button
-                    if (!loadSignUp) ...[
-                      // a small gap
-                      const SizedBox(height: 4),
-                      TextButton(
-                        onPressed: () {}, // non functional rn
-                        child: Text(
-                          'Forgot Password?',
-                          // feels right
-                          style: context.textTheme.bodySmall!.copyWith(
-                            color: context.colorScheme.tertiary,
-                            fontWeight: .bold,
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    // a medium gap
-                    const SizedBox(height: 24),
-                    // continue button
-                    SizedBox(
-                      // height consistency with other button
-                      height: 50,
-                      width: .infinity, // a wide button
-                      child: FilledButton(
-                        // just performs input validation for now
-                        onPressed: () {
-                          if (loadSignUp) {
-                            _signUpFormKey.currentState?.validate();
-                          } else {
-                            _signInFormKey.currentState?.validate();
+                        validator: (value) {
+                          if (_firebaseError != null &&
+                              isErrorForEmail(_firebaseError!)) {
+                            return _firebaseError;
                           }
+                          return emailInputValidator(value);
                         },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: context.colorScheme.secondary,
-                          // borderRadius consistency
-                          shape: RoundedRectangleBorder(
-                            borderRadius: .all(.circular(16)),
-                          ),
-                        ),
-                        child: Text(
-                          'Continue',
-                          style: context.textTheme.bodyLarge!.copyWith(
-                            color: context.colorScheme.onSecondary,
-                            fontWeight: .bold,
-                          ),
-                        ),
                       ),
-                    ),
 
-                    // a medium gap | also a buffer between keyboard and continue
-                    const SizedBox(height: 16),
-                    // hide if keyboard
-                    AnimatedSwitcher(
-                      // pretty quick
-                      duration: const Duration(milliseconds: 250),
-                      // feel right
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeOut,
-                      child: (!isKeyboardUp)
-                          // switch to sign in/sign up
-                          ? Row(
-                              mainAxisAlignment: .center, // feels right
-                              children: [
-                                Text(
-                                  (loadSignUp)
-                                      ? 'Already have an account?'
-                                      : 'New here?',
-                                  // feels right
-                                  style: context.textTheme.bodySmall,
-                                ),
-                                TextButton(
-                                  onPressed: _switchAuthMode,
-                                  // make it feel part of text
-                                  style: TextButton.styleFrom(padding: .all(0)),
-                                  child: Text(
-                                    // conditional button text
-                                    (loadSignUp) ? 'Sign In' : 'Sign Up',
-                                    // feels right
-                                    style: context.textTheme.bodySmall!
-                                        .copyWith(
-                                          color: context.colorScheme.primary,
-                                          fontWeight: .bold,
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : const SizedBox.shrink(), // better than other ways
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // squished to bottom bc above widget is expanded
-          // hide if keyboard
-          // a alt auth method
-          AnimatedSwitcher(
-            // pretty quick
-            duration: const Duration(milliseconds: 250),
-            // feels right
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeOut,
-            child: (!isKeyboardUp)
-                // regular column works
-                ? Column(
-                    children: [
-                      // 'Or' with two dividers on either side
-                      Row(
-                        children: [
-                          // divider on left
-                          Expanded(
-                            child: Opacity(
-                              opacity: 0.5, // feels right
-                              child: Divider(
-                                color: context.colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          // 'Or'
-                          Padding(
-                            padding: const .symmetric(horizontal: 8),
-                            child: Opacity(
-                              opacity: 0.75, //feels right
-                              child: Text('Or'),
-                            ),
-                          ),
-                          // divider on right
-                          Expanded(
-                            child: Opacity(
-                              opacity: 0.5, // feels right
-                              child: Divider(
-                                color: context.colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      // a medium gap
-                      const SizedBox(height: 20),
-                      // continue with google button
-                      SizedBox(
-                        // height consistency with other button
-                        height: 50,
-                        width: .infinity, // a wide button
-                        child: ElevatedButton.icon(
-                          onPressed: () {}, // non functional rn
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
+                      // only for sign up screen -> Name Field
+                      if (loadSignUp) ...[
+                        // a proper gap
+                        const SizedBox(height: 16),
+                        const Text('Your Name'),
+                        // a small gap
+                        const SizedBox(height: 4),
+                        TextFormField(
+                          controller: _nameController,
+                          focusNode: _nameFocusNode,
+                          enabled: !_isLoading,
+                          autovalidateMode: .onUserInteraction,
+                          style: context.textTheme.bodyMedium,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
                               borderRadius: .all(.circular(16)),
                             ),
-                            // preventing splash holding when google overlay up
-                            splashFactory: NoSplash.splashFactory,
                           ),
-                          // google logo
-                          icon: Image.asset(
-                            'assets/auth_google/google.png',
+                          validator: (value) => nameInputValidator(value),
+                        ),
+                      ],
+
+                      // a proper gap
+                      const SizedBox(height: 16),
+                      // conditional TextFormField top text
+                      Text((loadSignUp) ? 'Create Password' : 'Password'),
+                      // a small gap
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: loadSignUp
+                            ? _passwordControllerSignUp
+                            : _passwordControllerSignIn,
+                        focusNode: loadSignUp
+                            ? _passwordFocusNodeSignUp
+                            : _passwordFocusNodeSignIn,
+                        enabled: !_isLoading,
+                        autovalidateMode: .onUserInteraction,
+                        style: context.textTheme.bodyMedium,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: .all(.circular(16)),
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(() {
+                              if (loadSignUp) {
+                                _signUpObscurePassword =
+                                    !_signUpObscurePassword;
+                              } else {
+                                _signInObscurePassword =
+                                    !_signInObscurePassword;
+                              }
+                            }),
+                            icon: Icon(
+                              (loadSignUp
+                                      ? _signUpObscurePassword
+                                      : _signInObscurePassword)
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                          ),
+                        ),
+                        obscureText: loadSignUp
+                            ? _signUpObscurePassword
+                            : _signInObscurePassword,
+                        validator: (value) {
+                          if (_firebaseError != null &&
+                              isErrorForPassword(_firebaseError!)) {
+                            return _firebaseError;
+                          }
+                          return passwordInputValidator(value, loadSignUp);
+                        },
+                      ),
+
+                      // only for sign in screen -> forgot password button
+                      if (!loadSignUp) ...[
+                        // a small gap
+                        const SizedBox(height: 4),
+                        TextButton(
+                          onPressed: () {}, // non functional rn
+                          child: Text(
+                            'Forgot Password?',
                             // feels right
-                            height: 25,
-                            width: 25,
-                          ),
-                          label: Text(
-                            'Continue with Google',
-                            style: context.textTheme.bodyLarge!.copyWith(
+                            style: context.textTheme.bodySmall!.copyWith(
+                              color: context.colorScheme.tertiary,
                               fontWeight: .bold,
                             ),
                           ),
                         ),
+                      ],
+
+                      // a medium gap
+                      const SizedBox(height: 24),
+                      // continue button
+                      SizedBox(
+                        // height consistency with other button
+                        height: 50,
+                        width: .infinity, // a wide button
+                        child: IgnorePointer(
+                          ignoring: _isLoading,
+                          child: FilledButton(
+                            // just performs input validation for now
+                            onPressed: loadSignUp
+                                ? _onContinueSignUp
+                                : _onContinueSignIn,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: context.colorScheme.secondary
+                                  .withValues(alpha: _isLoading ? 0.75 : 1),
+                              // borderRadius consistency
+                              shape: RoundedRectangleBorder(
+                                borderRadius: .all(.circular(16)),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? SpinKitThreeInOut(
+                                    color: context.colorScheme.onSurface,
+                                    size: 50,
+                                  )
+                                : Text(
+                                    'Continue',
+                                    style: context.textTheme.bodyLarge!
+                                        .copyWith(
+                                          color:
+                                              context.colorScheme.onSecondary,
+                                          fontWeight: .bold,
+                                        ),
+                                  ),
+                          ),
+                        ),
+                      ),
+
+                      // a medium gap | also a buffer between keyboard and continue
+                      const SizedBox(height: 16),
+                      // hide if keyboard
+                      AnimatedSwitcher(
+                        // pretty quick
+                        duration: const Duration(milliseconds: 250),
+                        // feel right
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeOut,
+                        child: (!isKeyboardUp)
+                            // switch to sign in/sign up
+                            ? Opacity(
+                                opacity: _isLoading ? 0.5 : 1,
+                                child: Row(
+                                  mainAxisAlignment: .center, // feels right
+                                  children: [
+                                    Text(
+                                      (loadSignUp)
+                                          ? 'Already have an account?'
+                                          : 'New here?',
+                                      // feels right
+                                      style: context.textTheme.bodySmall,
+                                    ),
+                                    TextButton(
+                                      onPressed: _isLoading
+                                          ? null
+                                          : _switchAuthMode,
+                                      // make it feel part of text
+                                      style: TextButton.styleFrom(
+                                        padding: .all(0),
+                                      ),
+                                      child: Text(
+                                        // conditional button text
+                                        (loadSignUp) ? 'Sign In' : 'Sign Up',
+                                        // feels right
+                                        style: context.textTheme.bodySmall!
+                                            .copyWith(
+                                              color:
+                                                  context.colorScheme.primary,
+                                              fontWeight: .bold,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(), // better than other ways
                       ),
                     ],
-                  )
-                : const SizedBox.shrink(), // better than other ways
-          ),
-        ],
+                  ),
+                ),
+              ),
+            ),
+
+            // squished to bottom bc above widget is expanded
+            // hide if keyboard
+            // a alt auth method
+            AnimatedSwitcher(
+              // pretty quick
+              duration: const Duration(milliseconds: 250),
+              // feels right
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeOut,
+              child: (!isKeyboardUp)
+                  // regular column works
+                  ? Column(
+                      children: [
+                        // 'Or' with two dividers on either side
+                        Row(
+                          children: [
+                            // divider on left
+                            Expanded(
+                              child: Opacity(
+                                opacity: 0.5, // feels right
+                                child: Divider(
+                                  color: context.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            // 'Or'
+                            Padding(
+                              padding: const .symmetric(horizontal: 8),
+                              child: Opacity(
+                                opacity: 0.75, //feels right
+                                child: Text('Or'),
+                              ),
+                            ),
+                            // divider on right
+                            Expanded(
+                              child: Opacity(
+                                opacity: 0.5, // feels right
+                                child: Divider(
+                                  color: context.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // a medium gap
+                        const SizedBox(height: 20),
+                        // continue with google button
+                        SizedBox(
+                          // height consistency with other button
+                          height: 50,
+                          width: .infinity, // a wide button
+                          child: IgnorePointer(
+                            ignoring: _isLoading,
+                            child: ElevatedButton.icon(
+                              onPressed: () {}, // non functional rn
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: .all(.circular(16)),
+                                ),
+                                // preventing splash holding when google overlay up
+                                splashFactory: NoSplash.splashFactory,
+                              ),
+                              // google logo
+                              icon: Opacity(
+                                opacity: _isLoading ? 0.25 : 1,
+                                child: Image.asset(
+                                  'assets/auth_google/google.png',
+                                  // feels right
+                                  height: 25,
+                                  width: 25,
+                                ),
+                              ),
+                              label: Opacity(
+                                opacity: _isLoading ? 0.5 : 1,
+                                child: Text(
+                                  'Continue with Google',
+                                  style: context.textTheme.bodyLarge!.copyWith(
+                                    fontWeight: .bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(), // better than other ways
+            ),
+          ],
+        ),
       ),
     );
   }

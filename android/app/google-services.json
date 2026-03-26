@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1089893444526",
+    "project_id": "moodmap-by-ruchir",
+    "storage_bucket": "moodmap-by-ruchir.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1089893444526:android:ce54737f158bc84f60763f",
+        "android_client_info": {
+          "package_name": "com.example.moodmap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2aDk9DWTVISKe2MLLJuFSPxFt-2yzvMI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

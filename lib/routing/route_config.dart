@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moodmap/screens/auth/auth_ui.dart';
+import 'package:moodmap/screens/home/home.dart';
 import 'package:moodmap/screens/intro_splash.dart';
 import 'package:moodmap/screens/onboarding/onb_screens.dart';
+import 'package:moodmap/screens/auth/auth_ui.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -40,7 +41,7 @@ final GoRouter router = GoRouter(
                   // create a CurvedAnimation
                   final curvedAnimation = CurvedAnimation(
                     parent: animation,
-                    curve: Curves.easeOutExpo,
+                    curve: Curves.easeOutQuart,
                   );
                   // a ScaleTransition by CurvedAnimation
                   return ScaleTransition(
@@ -61,5 +62,7 @@ final GoRouter router = GoRouter(
         );
       },
     ),
+
+    GoRoute(path: '/home', builder: (context, state) => const Home()),
   ],
 );

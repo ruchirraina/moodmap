@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:moodmap/firebase_options.dart';
 import 'package:moodmap/theme/theme_config.dart';
 import 'package:moodmap/routing/route_config.dart';
 
 // app starts here duh
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ensuring widget binding init
   // DeviceOrientation set to only portraitUp
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // initialise firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MainApp());
 }
 
