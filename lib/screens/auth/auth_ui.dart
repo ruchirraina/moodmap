@@ -78,25 +78,6 @@ class _AuthUiState extends State<AuthUi> {
   // recieve err msg if occurs
   String? _firebaseError;
 
-  // a SnackBar config for displaying err msgs
-  SnackBar _errorSnackBar(String errorMessage) => SnackBar(
-    behavior: .floating,
-    // feels right utilising empty space
-    margin: .only(bottom: 200, left: 16, right: 16),
-    backgroundColor: context.colorScheme.errorContainer,
-    // feels right
-    dismissDirection: .horizontal,
-    persist: true, // stays
-    content: Text(
-      errorMessage,
-      // feels right
-      style: context.textTheme.labelMedium!.copyWith(
-        color: context.colorScheme.onErrorContainer,
-        fontWeight: .bold,
-      ),
-    ),
-  );
-
   // signup continue handle
   void _onContinueSignUp() {
     // clear past errors
@@ -129,7 +110,9 @@ class _AuthUiState extends State<AuthUi> {
               _isLoading = false;
             });
             // show SnackBar msg
-            ScaffoldMessenger.of(context).showSnackBar(_errorSnackBar(error));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(context.errorSnackBar(error));
           } // for other errors display as field errors
           else {
             setState(() {
@@ -172,7 +155,9 @@ class _AuthUiState extends State<AuthUi> {
               _isLoading = false;
             });
             // show SnackBar msg
-            ScaffoldMessenger.of(context).showSnackBar(_errorSnackBar(error));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(context.errorSnackBar(error));
           } // for other errors display as field errors
           else {
             setState(() {
@@ -275,20 +260,19 @@ class _AuthUiState extends State<AuthUi> {
     required bool isKeyboardUp,
     required bool loadSignUp,
   }) {
-    return Padding(
-      padding: const .all(16), // feels right
-      // when tap outside form fields
-      child: GestureDetector(
-        behavior: .opaque,
-        onTap: () {
-          if (loadSignUp) {
-            _signUpObscurePassword = true;
-          } else {
-            _signInObscurePassword = true;
-          }
-          FocusScope.of(context).unfocus();
-        },
-        // a regular column works
+    // when tap outside form fields
+    return GestureDetector(
+      behavior: .opaque,
+      onTap: () {
+        if (loadSignUp) {
+          _signUpObscurePassword = true;
+        } else {
+          _signInObscurePassword = true;
+        }
+        FocusScope.of(context).unfocus();
+      },
+      child: Padding(
+        padding: const .all(16), // feels right
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, // feels right
           children: [
@@ -428,7 +412,7 @@ class _AuthUiState extends State<AuthUi> {
                         // a small gap
                         const SizedBox(height: 4),
                         TextButton(
-                          onPressed: () {}, // non functional rn
+                          onPressed: () => context.push('/passReset'),
                           child: Text(
                             'Forgot Password?',
                             // feels right
@@ -450,7 +434,6 @@ class _AuthUiState extends State<AuthUi> {
                         child: IgnorePointer(
                           ignoring: _isLoading,
                           child: FilledButton(
-                            // just performs input validation for now
                             onPressed: loadSignUp
                                 ? _onContinueSignUp
                                 : _onContinueSignIn,

@@ -13,6 +13,10 @@ class AuthLogic {
   static final String _netwErrMsg =
       'Connection timed out! You may check your internet connection and try again.';
 
+  // default err msg (idk what happened)
+  static final String _defErrMsg =
+      'An unkown error occurred! You may try again.';
+
   // sign up with email+pass
   static Future<String?> signUpWithEmailPass({
     required String email,
@@ -48,10 +52,11 @@ class AuthLogic {
     } // idk what happened
     catch (e) {
       credential?.user?.delete().ignore();
-      return 'An unkown error occurred! You may try again.';
+      return _defErrMsg;
     }
   }
 
+  // sign in with email+pass
   static Future<String?> signInWithEmailPass({
     required String email,
     required String password,
@@ -59,7 +64,7 @@ class AuthLogic {
     // trying signing in user with email+pass
     try {
       await _auth
-          .signInWithEmailAndPassword(email: email, password: password)
+          .signInWithEmailAndPassword(email: email.trim(), password: password)
           .timeout(_timeOut);
       // success sign in
       return null;
@@ -71,7 +76,26 @@ class AuthLogic {
       return _errMsgFirebaseAuthException(e);
     } // idk what happened
     catch (e) {
-      return 'An unkown error occurred! You may try again.';
+      return _defErrMsg;
+    }
+  }
+
+  // forgot password
+  static Future<String?> forgotPassword({required String email}) async {
+    try {
+      // attempt sending password reset link
+      await _auth.sendPasswordResetEmail(email: email.trim()).timeout(_timeOut);
+      // success
+      return null;
+    } // handle TimeoutException
+    on TimeoutException {
+      return _netwErrMsg;
+    } // handle FirebaseAuthException
+    on FirebaseAuthException catch (e) {
+      return _errMsgFirebaseAuthException(e);
+    } // idk what happened
+    catch (e) {
+      return _defErrMsg;
     }
   }
 
@@ -93,7 +117,7 @@ class AuthLogic {
       case 'user-disabled':
         return 'This account has been disabled! Contact support: ruchirrainafun@gmail.com.';
       default:
-        return 'An unkown error occurred! You may try again.';
+        return _defErrMsg;
     }
   }
 }
