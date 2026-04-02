@@ -11,6 +11,7 @@ extension ThemeExtension on BuildContext {
     // feels right utilising empty space
     margin: .only(bottom: 200, left: 16, right: 16),
     backgroundColor: colorScheme.errorContainer,
+    elevation: 0.75,
     // feels right
     dismissDirection: .horizontal,
     persist: true, // stays

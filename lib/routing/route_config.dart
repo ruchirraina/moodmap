@@ -56,16 +56,7 @@ final GoRouter router = GoRouter(
       path: '/auth',
       pageBuilder: (context, state) {
         final bool loadSignUp = state.uri.queryParameters['signup'] != 'false';
-
-        if (state.extra == 'scale_anim') {
-          return _buildGeneralTransitionPage(
-            key: state.pageKey,
-            child: AuthUi(loadSignUp: loadSignUp),
-          );
-        }
-
-        // default
-        return MaterialPage(
+        return _buildGeneralTransitionPage(
           key: state.pageKey,
           child: AuthUi(loadSignUp: loadSignUp),
         );

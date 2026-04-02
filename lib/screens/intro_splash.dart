@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:moodmap/theme/theme_config.dart';
 import 'package:moodmap/theme/theme_extension.dart';
 import 'dart:math' as math;
+import 'package:moodmap/screens/auth/auth_state.dart';
 import 'package:pretty_animated_buttons/pretty_animated_buttons.dart';
 
 class IntroSplash extends StatefulWidget {
@@ -25,6 +26,9 @@ class _IntroSplashState extends State<IntroSplash>
   // controls ui element(floaties and button) visibility | initially not visible
   bool _uiElementsVisible = false;
 
+  // store auth state
+  bool _authState = false;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +47,11 @@ class _IntroSplashState extends State<IntroSplash>
       vsync: this,
       duration: const Duration(seconds: 10), // also after which it reverses
     );
+
+    // store auth state
+    _authState = AuthState.loadAuthState();
+    // if already auth
+    if (_authState) _lottieLogoController.addListener(_navToHome);
   }
 
   // listens to _lottieLogoController | load ui elements
@@ -74,6 +83,18 @@ class _IntroSplashState extends State<IntroSplash>
         // a FadeTransition navigation
         // router go bc ux wise why option to return?
         context.go('/onboarding');
+      }
+    }
+  }
+
+  // direct nav to home
+  void _navToHome() async {
+    // once lottie logo loads in
+    if (_lottieLogoController.value == 1.0) {
+      // ux wise 2 seconds wait once it loads
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        context.go('/home');
       }
     }
   }
@@ -136,6 +157,7 @@ class _IntroSplashState extends State<IntroSplash>
   @override
   void dispose() {
     _lottieLogoController.removeListener(_unLoadUIElementsMoveNext);
+    _lottieLogoController.removeListener(_navToHome);
     _lottieLogoController.dispose();
     _iconAnimController.dispose();
     super.dispose();
@@ -215,29 +237,31 @@ class _IntroSplashState extends State<IntroSplash>
           ),
 
           // gotta protect it from being cut out
-          SafeArea(
-            child: AnimatedOpacity(
-              opacity: _uiElementsVisible ? 1 : 0,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.fastOutSlowIn,
-              child: Align(
-                alignment: .bottomCenter,
-                child: Padding(
-                  padding: const .symmetric(vertical: 32),
-                  // cool animation on tap
-                  child: PrettyWaveButton(
-                    onPressed: _getStarted,
-                    backgroundColor: context.colorScheme.primary,
-                    borderRadius: 16, // trying to match logo border radius
-                    child: Text(
-                      'Get Started',
-                      style: ThemeConfig.smallButtonTextTheme(context),
+          if (!_authState) ...[
+            SafeArea(
+              child: AnimatedOpacity(
+                opacity: _uiElementsVisible ? 1 : 0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.fastOutSlowIn,
+                child: Align(
+                  alignment: .bottomCenter,
+                  child: Padding(
+                    padding: const .symmetric(vertical: 32),
+                    // cool animation on tap
+                    child: PrettyWaveButton(
+                      onPressed: _getStarted,
+                      backgroundColor: context.colorScheme.primary,
+                      borderRadius: 16, // trying to match logo border radius
+                      child: Text(
+                        'Get Started',
+                        style: ThemeConfig.smallButtonTextTheme(context),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

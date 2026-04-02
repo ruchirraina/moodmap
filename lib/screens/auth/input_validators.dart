@@ -24,7 +24,7 @@ String? nameInputValidator(String? value) {
 String? passwordInputValidator(String? value, bool loadSignUp) {
   if (loadSignUp == true &&
       ((value == null || value.isEmpty || value.length < 6))) {
-    return 'Your password must be at least 6 charachters long!';
+    return 'Your password must be at least 6 characters long!';
   } else if (loadSignUp == false && (value == null || value.isEmpty)) {
     return " Your password can't be empty!";
   }

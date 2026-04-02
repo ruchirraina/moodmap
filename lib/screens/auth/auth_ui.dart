@@ -73,8 +73,10 @@ class _AuthUiState extends State<AuthUi> {
     }
   }
 
-  // toggles loading state
-  bool _isLoading = false;
+  // toggles loading state of Continue Button
+  bool _isContinueLoading = false;
+  // toggle loading state of Google Button
+  bool _isGoogleLoading = false;
   // recieve err msg if occurs
   String? _firebaseError;
 
@@ -91,7 +93,7 @@ class _AuthUiState extends State<AuthUi> {
         // good ux to hide if was not
         _signUpObscurePassword = true;
         // toggle loading state
-        _isLoading = true;
+        _isContinueLoading = true;
       });
       // attempt sign up
       AuthLogic.signUpWithEmailPass(
@@ -107,7 +109,7 @@ class _AuthUiState extends State<AuthUi> {
           else if (!isErrorNotForSnackBar(error)) {
             // toggle loading state
             setState(() {
-              _isLoading = false;
+              _isContinueLoading = false;
             });
             // show SnackBar msg
             ScaffoldMessenger.of(
@@ -117,7 +119,7 @@ class _AuthUiState extends State<AuthUi> {
           else {
             setState(() {
               _firebaseError = error;
-              _isLoading = false;
+              _isContinueLoading = false;
             });
           }
         }
@@ -138,7 +140,7 @@ class _AuthUiState extends State<AuthUi> {
         // good ux to hide if was not
         _signInObscurePassword = true;
         // toggle loading state
-        _isLoading = true;
+        _isContinueLoading = true;
       });
       // attempt sign in
       AuthLogic.signInWithEmailPass(
@@ -152,7 +154,7 @@ class _AuthUiState extends State<AuthUi> {
           } // iff err for snackbar
           else if (!isErrorNotForSnackBar(error)) {
             setState(() {
-              _isLoading = false;
+              _isContinueLoading = false;
             });
             // show SnackBar msg
             ScaffoldMessenger.of(
@@ -162,12 +164,44 @@ class _AuthUiState extends State<AuthUi> {
           else {
             setState(() {
               _firebaseError = error;
-              _isLoading = false;
+              _isContinueLoading = false;
             });
           }
         }
       });
     }
+  }
+
+  void _onGoogleAuth() async {
+    // clear past errors
+    ScaffoldMessenger.of(context).clearSnackBars();
+    setState(() {
+      _isGoogleLoading = true;
+      _firebaseError = null;
+    });
+    setState(() {
+      // good ux to hide if was not
+      _signInObscurePassword = true;
+      _signUpObscurePassword = true;
+    });
+    // attempt google auth
+    AuthLogic.googleAuth().then((error) {
+      if (mounted) {
+        // no error good to go
+        if (error == null) {
+          context.go('/home');
+        } // iff err for snackbar
+        else {
+          // show SnackBar msg
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(context.errorSnackBar(error));
+          setState(() {
+            _isGoogleLoading = false;
+          });
+        }
+      }
+    });
   }
 
   late final PageController _pageController; // PageView controller
@@ -241,15 +275,17 @@ class _AuthUiState extends State<AuthUi> {
     return Scaffold(
       // gotta protect so ui don't get cut
       body: SafeArea(
-        child: PageView(
+        child: PageView.builder(
           controller: _pageController,
           physics: NeverScrollableScrollPhysics(), // no scroll
-          children: [
-            // sign up screen
-            _buildAuthPage(isKeyboardUp: isKeyboardUp, loadSignUp: true),
-            // sign in screen
-            _buildAuthPage(isKeyboardUp: isKeyboardUp, loadSignUp: false),
-          ],
+          itemCount: 2,
+          itemBuilder: (context, index) {
+            // lazily build only the current and adjacent pages
+            return _buildAuthPage(
+              isKeyboardUp: isKeyboardUp,
+              loadSignUp: index == 0,
+            );
+          },
         ),
       ),
     );
@@ -315,7 +351,7 @@ class _AuthUiState extends State<AuthUi> {
                         focusNode: loadSignUp
                             ? _emailFocusNodeSignUp
                             : _emailFocusNodeSignIn,
-                        enabled: !_isLoading,
+                        enabled: !(_isContinueLoading || _isGoogleLoading),
                         autovalidateMode: .onUserInteraction,
                         style: context.textTheme.bodyMedium,
                         // appropriate
@@ -344,7 +380,7 @@ class _AuthUiState extends State<AuthUi> {
                         TextFormField(
                           controller: _nameController,
                           focusNode: _nameFocusNode,
-                          enabled: !_isLoading,
+                          enabled: !(_isContinueLoading || _isGoogleLoading),
                           autovalidateMode: .onUserInteraction,
                           style: context.textTheme.bodyMedium,
                           decoration: const InputDecoration(
@@ -369,7 +405,7 @@ class _AuthUiState extends State<AuthUi> {
                         focusNode: loadSignUp
                             ? _passwordFocusNodeSignUp
                             : _passwordFocusNodeSignIn,
-                        enabled: !_isLoading,
+                        enabled: !(_isContinueLoading || _isGoogleLoading),
                         autovalidateMode: .onUserInteraction,
                         style: context.textTheme.bodyMedium,
                         decoration: InputDecoration(
@@ -411,14 +447,21 @@ class _AuthUiState extends State<AuthUi> {
                       if (!loadSignUp) ...[
                         // a small gap
                         const SizedBox(height: 4),
-                        TextButton(
-                          onPressed: () => context.push('/passReset'),
-                          child: Text(
-                            'Forgot Password?',
-                            // feels right
-                            style: context.textTheme.bodySmall!.copyWith(
-                              color: context.colorScheme.tertiary,
-                              fontWeight: .bold,
+                        Opacity(
+                          opacity: (_isContinueLoading || _isGoogleLoading)
+                              ? 0.5
+                              : 1,
+                          child: TextButton(
+                            onPressed: (_isContinueLoading || _isGoogleLoading)
+                                ? null
+                                : () => context.push('/passReset'),
+                            child: Text(
+                              'Forgot Password?',
+                              // feels right
+                              style: context.textTheme.bodySmall!.copyWith(
+                                color: context.colorScheme.tertiary,
+                                fontWeight: .bold,
+                              ),
                             ),
                           ),
                         ),
@@ -432,20 +475,25 @@ class _AuthUiState extends State<AuthUi> {
                         height: 50,
                         width: .infinity, // a wide button
                         child: IgnorePointer(
-                          ignoring: _isLoading,
+                          ignoring: (_isContinueLoading || _isGoogleLoading),
                           child: FilledButton(
                             onPressed: loadSignUp
                                 ? _onContinueSignUp
                                 : _onContinueSignIn,
                             style: FilledButton.styleFrom(
                               backgroundColor: context.colorScheme.secondary
-                                  .withValues(alpha: _isLoading ? 0.75 : 1),
+                                  .withValues(
+                                    alpha:
+                                        (_isContinueLoading || _isGoogleLoading)
+                                        ? 0.75
+                                        : 1,
+                                  ),
                               // borderRadius consistency
                               shape: RoundedRectangleBorder(
                                 borderRadius: .all(.circular(16)),
                               ),
                             ),
-                            child: _isLoading
+                            child: _isContinueLoading
                                 ? SpinKitThreeInOut(
                                     color: context.colorScheme.onSurface,
                                     size: 50,
@@ -475,7 +523,10 @@ class _AuthUiState extends State<AuthUi> {
                         child: (!isKeyboardUp)
                             // switch to sign in/sign up
                             ? Opacity(
-                                opacity: _isLoading ? 0.5 : 1,
+                                opacity:
+                                    (_isContinueLoading || _isGoogleLoading)
+                                    ? 0.5
+                                    : 1,
                                 child: Row(
                                   mainAxisAlignment: .center, // feels right
                                   children: [
@@ -487,7 +538,9 @@ class _AuthUiState extends State<AuthUi> {
                                       style: context.textTheme.bodySmall,
                                     ),
                                     TextButton(
-                                      onPressed: _isLoading
+                                      onPressed:
+                                          (_isContinueLoading ||
+                                              _isGoogleLoading)
                                           ? null
                                           : _switchAuthMode,
                                       // make it feel part of text
@@ -569,35 +622,54 @@ class _AuthUiState extends State<AuthUi> {
                           height: 50,
                           width: .infinity, // a wide button
                           child: IgnorePointer(
-                            ignoring: _isLoading,
+                            ignoring: (_isContinueLoading || _isGoogleLoading),
                             child: ElevatedButton.icon(
-                              onPressed: () {}, // non functional rn
-                              style: ElevatedButton.styleFrom(
+                              onPressed: _onGoogleAuth,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: context
+                                    .colorScheme
+                                    .surfaceContainerLow
+                                    .withValues(
+                                      alpha:
+                                          (_isContinueLoading ||
+                                              _isGoogleLoading)
+                                          ? 0.75
+                                          : 1,
+                                    ),
+                                // borderRadius consistency
                                 shape: RoundedRectangleBorder(
                                   borderRadius: .all(.circular(16)),
                                 ),
-                                // preventing splash holding when google overlay up
-                                splashFactory: NoSplash.splashFactory,
                               ),
                               // google logo
-                              icon: Opacity(
-                                opacity: _isLoading ? 0.25 : 1,
-                                child: Image.asset(
-                                  'assets/auth_google/google.png',
-                                  // feels right
-                                  height: 25,
-                                  width: 25,
-                                ),
-                              ),
-                              label: Opacity(
-                                opacity: _isLoading ? 0.5 : 1,
-                                child: Text(
-                                  'Continue with Google',
-                                  style: context.textTheme.bodyLarge!.copyWith(
-                                    fontWeight: .bold,
-                                  ),
-                                ),
-                              ),
+                              icon: !_isGoogleLoading
+                                  ? Opacity(
+                                      opacity: _isContinueLoading ? 0.25 : 1,
+                                      child: Image.asset(
+                                        'assets/auth_google/google.png',
+                                        // feels right
+                                        height: 25,
+                                        width: 25,
+                                      ),
+                                    )
+                                  : null,
+                              label: _isGoogleLoading
+                                  ? SpinKitThreeInOut(
+                                      color: context.colorScheme.onSurface,
+                                      size: 50,
+                                    )
+                                  : Opacity(
+                                      opacity: _isContinueLoading ? 0.5 : 1,
+                                      child: Text(
+                                        'Continue with Google',
+                                        style: context.textTheme.bodyLarge!
+                                            .copyWith(
+                                              color:
+                                                  context.colorScheme.onSurface,
+                                              fontWeight: .bold,
+                                            ),
+                                      ),
+                                    ),
                             ),
                           ),
                         ),

@@ -12,7 +12,20 @@
           "package_name": "com.example.moodmap"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1089893444526-sf4o21gtls3dbn0aq0v7qu0vigqjsu1n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.moodmap",
+            "certificate_hash": "8576ad9b7b1de4ae34ebef55c4d1c64abd8282da"
+          }
+        },
+        {
+          "client_id": "1089893444526-81be376pr4bkq2h523ih0i1c82tfr3k1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA2aDk9DWTVISKe2MLLJuFSPxFt-2yzvMI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1089893444526-81be376pr4bkq2h523ih0i1c82tfr3k1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1089893444526-h07mftjjda3s496v8omrh3n4g98ucmq2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.moodmap"
+              }
+            }
+          ]
         }
       }
     }

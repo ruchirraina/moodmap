@@ -2,6 +2,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:moodmap/screens/auth/auth_state.dart';
+
 class AuthLogic {
   // init FirebaseAuth instance
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -39,6 +42,7 @@ class AuthLogic {
       await credential.user!.updateDisplayName(name.trim()).timeout(_timeOut);
       await credential.user!.reload();
       // success sign up
+      await AuthState.setAuthState(state: true);
       return null;
     } // handle TimeoutException
     on TimeoutException {
@@ -67,6 +71,7 @@ class AuthLogic {
           .signInWithEmailAndPassword(email: email.trim(), password: password)
           .timeout(_timeOut);
       // success sign in
+      await AuthState.setAuthState(state: true);
       return null;
     } // handle TimeoutException
     on TimeoutException {
@@ -86,6 +91,7 @@ class AuthLogic {
       // attempt sending password reset link
       await _auth.sendPasswordResetEmail(email: email.trim()).timeout(_timeOut);
       // success
+      await AuthState.setAuthState(state: true);
       return null;
     } // handle TimeoutException
     on TimeoutException {
@@ -97,6 +103,60 @@ class AuthLogic {
     catch (e) {
       return _defErrMsg;
     }
+  }
+
+  static Future<String?> googleAuth() async {
+    try {
+      // init instance
+      await GoogleSignIn.instance.initialize();
+
+      // trigger google auth popup and store user info
+      final googleUser = await GoogleSignIn.instance.authenticate();
+
+      // request acess token for email of user
+      final clientAuth = await googleUser.authorizationClient.authorizeScopes([
+        'email',
+      ]);
+
+      // create credential object
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleUser.authentication.idToken,
+        accessToken: clientAuth.accessToken,
+      );
+
+      // attemp auth via firebase
+      await _auth.signInWithCredential(credential).timeout(_timeOut);
+      // success
+      await AuthState.setAuthState(state: true);
+      return null;
+    } // handle TimeoutException
+    on TimeoutException {
+      await GoogleSignIn.instance.signOut();
+      return _netwErrMsg;
+    } // handle FirebaseAuthException
+    on FirebaseAuthException catch (e) {
+      await GoogleSignIn.instance.signOut();
+      return _errMsgFirebaseAuthException(e);
+    } // maybe google auth error idk
+    catch (e) {
+      await GoogleSignIn.instance.signOut();
+      // catch cancellations or network drops
+      final String errorString = e.toString().toLowerCase();
+      if (errorString.contains('canceled') ||
+          errorString.contains('cancelled')) {
+        return "Google Auth was cancelled!";
+      } else if (errorString.contains('network')) {
+        return _netwErrMsg;
+      }
+      return _defErrMsg;
+    }
+  }
+
+  // sign out func
+  static void signOutAuth() async {
+    await GoogleSignIn.instance.disconnect().catchError((_) => null);
+    await _auth.signOut().catchError((_) => null);
+    await AuthState.setAuthState(state: false);
   }
 
   // error messages for FirebaseAuthException

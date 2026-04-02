@@ -60,6 +60,26 @@ class _PassResetState extends State<PassReset> {
       setState(() {
         // toggle loading state
         _isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: .floating,
+            // feels right utilising empty space
+            margin: .only(bottom: 200, left: 16, right: 16),
+            backgroundColor: context.colorScheme.surfaceContainerLow,
+            elevation: 0.75,
+            // feels right
+            dismissDirection: .horizontal,
+            persist: true, // stays
+            content: Text(
+              'A password reset link has been sent to email (if linked to MoodMap).',
+              // feels right
+              style: context.textTheme.labelMedium!.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: .bold,
+              ),
+            ),
+          ),
+        );
       });
     }
   }
@@ -85,7 +105,7 @@ class _PassResetState extends State<PassReset> {
   @override
   Widget build(BuildContext context) {
     // to check if keyboard is up
-    bool _isKeyboardUp = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardUp = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -200,7 +220,7 @@ class _PassResetState extends State<PassReset> {
                   // feels right
                   switchInCurve: Curves.easeOut,
                   switchOutCurve: Curves.easeOut,
-                  child: (!_isKeyboardUp)
+                  child: (!isKeyboardUp)
                       ? SizedBox(
                           key: const ValueKey('password_reset_note'),
                           width: .infinity,

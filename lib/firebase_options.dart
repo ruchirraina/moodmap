@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1089893444526',
     projectId: 'moodmap-by-ruchir',
     storageBucket: 'moodmap-by-ruchir.firebasestorage.app',
+    androidClientId: '1089893444526-sf4o21gtls3dbn0aq0v7qu0vigqjsu1n.apps.googleusercontent.com',
+    iosClientId: '1089893444526-h07mftjjda3s496v8omrh3n4g98ucmq2.apps.googleusercontent.com',
     iosBundleId: 'com.example.moodmap',
   );
+
 }
