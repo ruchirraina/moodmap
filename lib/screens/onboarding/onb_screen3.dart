@@ -28,11 +28,7 @@ class OnbScreen3 extends StatelessWidget {
             width: 350,
             // a cool abstract lottie json
             child: Lottie.asset(
-              (context.theme.brightness == .light)
-                  // light version
-                  ? 'assets/info_pages_assets/info_pg3_asset_light.json'
-                  // dark version
-                  : 'assets/info_pages_assets/info_pg3_asset_dark.json',
+              'assets/onb_screen_assets/onb_asset3.json',
               // as large as possible while
               // still containing the source entirely within the target box
               fit: .contain,
@@ -43,7 +39,7 @@ class OnbScreen3 extends StatelessWidget {
             padding: const .symmetric(vertical: 20, horizontal: 32),
             child: Text(
               'Every week, your entries bloom into a gradient — rose, marigold, and wisteria.',
-              style: context.textTheme.bodyMedium!.copyWith(fontWeight: .bold),
+              style: context.textTheme.bodyMedium,
               textAlign: .center,
             ),
           ),
@@ -58,10 +54,7 @@ class OnbScreen3 extends StatelessWidget {
               // consistency with get started button
               shape: RoundedRectangleBorder(borderRadius: .circular(16)),
             ),
-            child: Text(
-              'Sign Up',
-              style: ThemeConfig.smallButtonTextTheme(context),
-            ),
+            child: Text('Sign Up', style: ThemeConfig.buttonTextTheme(context)),
           ),
           // alternate -> go sign in screen
           Row(

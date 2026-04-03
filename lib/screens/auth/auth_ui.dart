@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moodmap/theme/theme_config.dart';
 import 'package:moodmap/theme/theme_extension.dart';
 import 'package:moodmap/screens/auth/input_validators.dart';
 import 'package:moodmap/screens/auth/auth_logic.dart';
@@ -326,6 +327,10 @@ class _AuthUiState extends State<AuthUi> {
             // conditional subtitle
             Text(
               (loadSignUp) ? 'Create an account to begin.' : 'Welcome Back!',
+              style: context.textTheme.bodyMedium!.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             // scrollable section even if cut off by keyboard
@@ -341,7 +346,12 @@ class _AuthUiState extends State<AuthUi> {
                       // a proper gap
                       const SizedBox(height: 32),
                       // email area
-                      const Text('Email'),
+                      Text(
+                        'Email',
+                        style: context.textTheme.bodyMedium!.copyWith(
+                          color: context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       // a small gap
                       const SizedBox(height: 4),
                       TextFormField(
@@ -374,7 +384,12 @@ class _AuthUiState extends State<AuthUi> {
                       if (loadSignUp) ...[
                         // a proper gap
                         const SizedBox(height: 16),
-                        const Text('Your Name'),
+                        Text(
+                          'Your Name',
+                          style: context.textTheme.bodyMedium!.copyWith(
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                         // a small gap
                         const SizedBox(height: 4),
                         TextFormField(
@@ -395,7 +410,12 @@ class _AuthUiState extends State<AuthUi> {
                       // a proper gap
                       const SizedBox(height: 16),
                       // conditional TextFormField top text
-                      Text((loadSignUp) ? 'Create Password' : 'Password'),
+                      Text(
+                        (loadSignUp) ? 'Create Password' : 'Password',
+                        style: context.textTheme.bodyMedium!.copyWith(
+                          color: context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       // a small gap
                       const SizedBox(height: 4),
                       TextFormField(
@@ -481,7 +501,7 @@ class _AuthUiState extends State<AuthUi> {
                                 ? _onContinueSignUp
                                 : _onContinueSignIn,
                             style: FilledButton.styleFrom(
-                              backgroundColor: context.colorScheme.secondary
+                              backgroundColor: context.colorScheme.primary
                                   .withValues(
                                     alpha:
                                         (_isContinueLoading || _isGoogleLoading)
@@ -495,17 +515,12 @@ class _AuthUiState extends State<AuthUi> {
                             ),
                             child: _isContinueLoading
                                 ? SpinKitThreeInOut(
-                                    color: context.colorScheme.onSurface,
+                                    color: context.colorScheme.onSecondary,
                                     size: 50,
                                   )
                                 : Text(
                                     'Continue',
-                                    style: context.textTheme.bodyLarge!
-                                        .copyWith(
-                                          color:
-                                              context.colorScheme.onSecondary,
-                                          fontWeight: .bold,
-                                        ),
+                                    style: ThemeConfig.buttonTextTheme(context),
                                   ),
                           ),
                         ),
@@ -648,8 +663,8 @@ class _AuthUiState extends State<AuthUi> {
                                       child: Image.asset(
                                         'assets/auth_google/google.png',
                                         // feels right
-                                        height: 25,
-                                        width: 25,
+                                        height: 20,
+                                        width: 20,
                                       ),
                                     )
                                   : null,
@@ -666,7 +681,7 @@ class _AuthUiState extends State<AuthUi> {
                                             .copyWith(
                                               color:
                                                   context.colorScheme.onSurface,
-                                              fontWeight: .bold,
+                                              fontWeight: .w500,
                                             ),
                                       ),
                                     ),

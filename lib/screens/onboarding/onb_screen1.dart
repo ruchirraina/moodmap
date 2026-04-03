@@ -21,11 +21,7 @@ class OnbScreen1 extends StatelessWidget {
               width: 400,
               // a journaling based lottie json
               child: Lottie.asset(
-                (context.theme.brightness == .light)
-                    // light version
-                    ? 'assets/info_pages_assets/info_pg1_asset_light.json'
-                    // dark version
-                    : 'assets/info_pages_assets/info_pg1_asset_dark.json',
+                'assets/onb_screen_assets/onb_asset1.json',
                 // as large as possible while
                 // still containing the source entirely within the target box
                 fit: .contain,
@@ -39,9 +35,7 @@ class OnbScreen1 extends StatelessWidget {
               padding: const .symmetric(horizontal: 52), // less width text
               child: Text(
                 'Write about your day. Morning, afternoon, evening — any mood.',
-                style: context.textTheme.bodyMedium!.copyWith(
-                  fontWeight: .bold,
-                ),
+                style: context.textTheme.bodyMedium,
                 textAlign: .center, // feels better
               ),
             ),

@@ -20,7 +20,7 @@ extension ThemeExtension on BuildContext {
       // feels right
       style: textTheme.labelMedium!.copyWith(
         color: colorScheme.onErrorContainer,
-        fontWeight: .bold,
+        fontWeight: .w500,
       ),
     ),
   );

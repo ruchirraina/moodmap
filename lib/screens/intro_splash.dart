@@ -254,7 +254,7 @@ class _IntroSplashState extends State<IntroSplash>
                       borderRadius: 16, // trying to match logo border radius
                       child: Text(
                         'Get Started',
-                        style: ThemeConfig.smallButtonTextTheme(context),
+                        style: ThemeConfig.buttonTextTheme(context),
                       ),
                     ),
                   ),

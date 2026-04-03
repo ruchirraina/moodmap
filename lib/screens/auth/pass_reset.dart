@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moodmap/theme/theme_config.dart';
 import 'package:moodmap/theme/theme_extension.dart';
 import 'package:moodmap/screens/auth/input_validators.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -149,7 +150,12 @@ class _PassResetState extends State<PassReset> {
                       ),
                       // a proper gap
                       const SizedBox(height: 24),
-                      Text('Enter your email to reset your password.'),
+                      Text(
+                        'Enter your email to reset your password.',
+                        style: context.textTheme.bodyMedium!.copyWith(
+                          color: context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       // a small gap
                       TextFormField(
@@ -185,7 +191,7 @@ class _PassResetState extends State<PassReset> {
                             // just performs input validation for now
                             onPressed: _onButtonPress,
                             style: FilledButton.styleFrom(
-                              backgroundColor: context.colorScheme.secondary
+                              backgroundColor: context.colorScheme.primary
                                   .withValues(alpha: _isLoading ? 0.75 : 1),
                               // borderRadius consistency
                               shape: RoundedRectangleBorder(
@@ -194,17 +200,12 @@ class _PassResetState extends State<PassReset> {
                             ),
                             child: _isLoading
                                 ? SpinKitThreeInOut(
-                                    color: context.colorScheme.onSurface,
+                                    color: context.colorScheme.onPrimary,
                                     size: 50,
                                   )
                                 : Text(
                                     'Send Reset Link',
-                                    style: context.textTheme.bodyLarge!
-                                        .copyWith(
-                                          color:
-                                              context.colorScheme.onSecondary,
-                                          fontWeight: .bold,
-                                        ),
+                                    style: ThemeConfig.buttonTextTheme(context),
                                   ),
                           ),
                         ),
@@ -246,7 +247,7 @@ class _PassResetState extends State<PassReset> {
                                                 color: context
                                                     .colorScheme
                                                     .tertiary,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: .bold,
                                               ),
                                         ),
                                       ),
@@ -255,13 +256,24 @@ class _PassResetState extends State<PassReset> {
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      Icon(Icons.circle, size: 8),
+                                      Icon(
+                                        Icons.circle,
+                                        size: 6,
+                                        color: context
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       // a small gap
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          'Changing your password will log you out of all other devices.',
-                                          style: context.textTheme.labelMedium,
+                                          'Resetting your password will log you out of all other devices.',
+                                          style: context.textTheme.labelMedium!
+                                              .copyWith(
+                                                color: context
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -269,13 +281,24 @@ class _PassResetState extends State<PassReset> {
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      Icon(Icons.circle, size: 8),
+                                      Icon(
+                                        Icons.circle,
+                                        size: 6,
+                                        color: context
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       // a small gap
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           'The reset link in your email will expire in 1 hour.',
-                                          style: context.textTheme.labelMedium,
+                                          style: context.textTheme.labelMedium!
+                                              .copyWith(
+                                                color: context
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -283,13 +306,24 @@ class _PassResetState extends State<PassReset> {
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      Icon(Icons.circle, size: 8),
+                                      Icon(
+                                        Icons.circle,
+                                        size: 6,
+                                        color: context
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                       // a small gap
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           'Each link works only once for your security.',
-                                          style: context.textTheme.labelMedium,
+                                          style: context.textTheme.labelMedium!
+                                              .copyWith(
+                                                color: context
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
                                         ),
                                       ),
                                     ],

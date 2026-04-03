@@ -27,7 +27,7 @@ class Home extends StatelessWidget {
               ),
               child: Text(
                 'Sign Out',
-                style: ThemeConfig.smallButtonTextTheme(context),
+                style: ThemeConfig.buttonTextTheme(context),
               ),
             ),
           ],

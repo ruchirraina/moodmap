@@ -29,11 +29,7 @@ class OnbScreen2 extends StatelessWidget {
                       scale: 1.75, // make it bigger
                       // a photo based lottie json
                       child: Lottie.asset(
-                        (context.theme.brightness == .light)
-                            // light version
-                            ? 'assets/info_pages_assets/info_pg2_asset1_light.json'
-                            // dark version
-                            : 'assets/info_pages_assets/info_pg2_asset1_dark.json',
+                        'assets/onb_screen_assets/onb_asset2_1.json',
                         /* as large as possible while still containing the
                          * source entirely within the target box */
                         fit: .contain,
@@ -46,11 +42,7 @@ class OnbScreen2 extends StatelessWidget {
                       scale: 3.75, // make it bigger
                       // a music based lottie json
                       child: Lottie.asset(
-                        (context.theme.brightness == .light)
-                            // light version
-                            ? 'assets/info_pages_assets/info_pg2_asset2_light.json'
-                            // dark version
-                            : 'assets/info_pages_assets/info_pg2_asset2_dark.json',
+                        'assets/onb_screen_assets/onb_asset2_2.json',
                         /* as large as possible while still containing the
                          * source entirely within the target box */
                         fit: .contain,
@@ -68,9 +60,7 @@ class OnbScreen2 extends StatelessWidget {
               padding: const .symmetric(horizontal: 52), // less width text
               child: Text(
                 'Add photos for the memory, a song for the vibe - all inside your entry.',
-                style: context.textTheme.bodyMedium!.copyWith(
-                  fontWeight: .bold,
-                ),
+                style: context.textTheme.bodyMedium,
                 textAlign: .center, // feels right
               ),
             ),
