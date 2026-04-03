@@ -113,9 +113,13 @@ class _AuthUiState extends State<AuthUi> {
               _isContinueLoading = false;
             });
             // show SnackBar msg
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(context.errorSnackBar(error));
+            ScaffoldMessenger.of(context).showSnackBar(
+              ThemeConfig.errorSnackBar(
+                context,
+                errorMessage: error,
+                bottomMargin: 150,
+              ),
+            );
           } // for other errors display as field errors
           else {
             setState(() {
@@ -158,9 +162,13 @@ class _AuthUiState extends State<AuthUi> {
               _isContinueLoading = false;
             });
             // show SnackBar msg
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(context.errorSnackBar(error));
+            ScaffoldMessenger.of(context).showSnackBar(
+              ThemeConfig.errorSnackBar(
+                context,
+                errorMessage: error,
+                bottomMargin: 150,
+              ),
+            );
           } // for other errors display as field errors
           else {
             setState(() {
@@ -194,9 +202,13 @@ class _AuthUiState extends State<AuthUi> {
         } // iff err for snackbar
         else {
           // show SnackBar msg
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(context.errorSnackBar(error));
+          ScaffoldMessenger.of(context).showSnackBar(
+            ThemeConfig.errorSnackBar(
+              context,
+              errorMessage: error,
+              bottomMargin: 150,
+            ),
+          );
           setState(() {
             _isGoogleLoading = false;
           });

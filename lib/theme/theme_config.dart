@@ -163,4 +163,28 @@ class ThemeConfig {
       fontWeight: .w500,
     );
   }
+
+  // a SnackBar config for displaying err msgs
+  static SnackBar errorSnackBar(
+    BuildContext context, {
+    required String errorMessage,
+    required double bottomMargin,
+  }) => SnackBar(
+    behavior: .floating,
+    // feels right utilising empty space
+    margin: .only(bottom: bottomMargin, left: 16, right: 16),
+    backgroundColor: context.colorScheme.surfaceContainerLow,
+    elevation: 0.75,
+    // feels right
+    dismissDirection: .horizontal,
+    persist: true, // stays
+    content: Text(
+      errorMessage,
+      // feels right
+      style: context.textTheme.labelMedium!.copyWith(
+        color: context.colorScheme.error,
+        fontWeight: .w500,
+      ),
+    ),
+  );
 }

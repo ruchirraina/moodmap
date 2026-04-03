@@ -48,9 +48,13 @@ class _PassResetState extends State<PassReset> {
         if (error != null && !isErrorNotForSnackBar(error)) {
           // show SnackBar msg
           if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(context.errorSnackBar(error));
+            ScaffoldMessenger.of(context).showSnackBar(
+              ThemeConfig.errorSnackBar(
+                context,
+                errorMessage: error,
+                bottomMargin: 200,
+              ),
+            );
           }
         } else if (error != null && isErrorForEmail(error)) {
           setState(() {

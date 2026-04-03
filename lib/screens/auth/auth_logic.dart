@@ -140,12 +140,9 @@ class AuthLogic {
     } // maybe google auth error idk
     catch (e) {
       await GoogleSignIn.instance.signOut();
-      // catch cancellations or network drops
+      // catch network drops
       final String errorString = e.toString().toLowerCase();
-      if (errorString.contains('canceled') ||
-          errorString.contains('cancelled')) {
-        return "Google Auth was cancelled!";
-      } else if (errorString.contains('network')) {
+      if (errorString.contains('network')) {
         return _netwErrMsg;
       }
       return _defErrMsg;

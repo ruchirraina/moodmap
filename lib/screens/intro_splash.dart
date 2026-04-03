@@ -236,6 +236,14 @@ class _IntroSplashState extends State<IntroSplash>
             icon: Icons.edit_outlined,
           ),
 
+          // if not auth and no button fill in empty space
+          if (!_authState)
+            _buildBackgroundIcon(
+              xCord: 0,
+              yCord: 0.8,
+              icon: Icons.book_outlined,
+            ),
+
           // gotta protect it from being cut out
           if (!_authState) ...[
             SafeArea(
