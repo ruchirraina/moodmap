@@ -1,40 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:moodmap/firebase_options.dart';
-import 'package:moodmap/screens/auth/auth_state.dart';
-import 'package:moodmap/theme/theme_config.dart';
-import 'package:moodmap/routing/route_config.dart';
+import 'package:provider/provider.dart';
 
-// app starts here duh
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ensuring widget binding init
-  // DeviceOrientation set to only portraitUp
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  // initialise firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
+import 'features/splash/presentation/screens/splash_screen.dart';
 
-  // init SharedPreferences
-  await AuthState.initSharedPreferences();
-
-  runApp(const MainApp());
+void main() {
+  runApp(const MoodMapApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MoodMapApp extends StatelessWidget {
+  const MoodMapApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // pre-cache the Google logo
-    // prevent UI thread pause on first Auth screen load
-    precacheImage(const AssetImage('assets/auth_google/google.png'), context);
-
-    return MaterialApp.router(
-      title: 'MoodMap',
-      debugShowCheckedModeBanner: false, // remove the debug banner
-      theme: ThemeConfig.lightTheme,
-      darkTheme: ThemeConfig.darkTheme,
-      routerConfig: router,
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => ThemeProvider())],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'MoodMap',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const SplashScreen(),
+          );
+        },
+      ),
     );
   }
 }
