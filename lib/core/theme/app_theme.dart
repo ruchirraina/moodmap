@@ -1,26 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
 
 class AppTheme {
+  static TextTheme _buildTextTheme(Brightness brightness) {
+    final baseTheme = ThemeData(brightness: brightness, useMaterial3: true);
+    final baseTextTheme = GoogleFonts.latoTextTheme(baseTheme.textTheme);
+
+    return baseTextTheme.copyWith(
+      displayLarge: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.displayLarge,
+      ),
+      displayMedium: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.displayMedium,
+      ),
+      displaySmall: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.displaySmall,
+      ),
+      headlineLarge: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.headlineLarge,
+      ),
+      headlineMedium: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.headlineMedium,
+      ),
+      headlineSmall: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.headlineSmall,
+      ),
+      titleLarge: GoogleFonts.playfairDisplay(
+        textStyle: baseTextTheme.titleLarge,
+      ),
+    );
+  }
+
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
-    fontFamily: 'Inter',
     scaffoldBackgroundColor: AppColors.lightBg,
+    textTheme: _buildTextTheme(Brightness.light),
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
       primary: AppColors.coreMulberry,
-      onPrimary: Color(0xFFFAF0F8),
+      onPrimary: AppColors.lightOnPrimary,
       primaryContainer: AppColors.mulberryLight,
-      onPrimaryContainer: Color(0xFF2A0D20),
+      onPrimaryContainer: AppColors.lightOnPrimaryContainer,
       secondary: AppColors.corePetal,
-      onSecondary: Color(0xFFFDF2F6),
+      onSecondary: AppColors.lightOnSecondary,
       secondaryContainer: AppColors.petalLight,
-      onSecondaryContainer: Color(0xFF330D1E),
+      onSecondaryContainer: AppColors.lightOnSecondaryContainer,
       tertiary: AppColors.coreWisteria,
-      onTertiary: Color(0xFFF4F2FC),
+      onTertiary: AppColors.lightOnTertiary,
       tertiaryContainer: AppColors.wisteriaLight,
-      onTertiaryContainer: Color(0xFF1A1838),
+      onTertiaryContainer: AppColors.lightOnTertiaryContainer,
       surface: AppColors.lightBg,
       onSurface: AppColors.lightOnSurface,
       onSurfaceVariant: AppColors.lightOnSurfaceVariant,
@@ -38,30 +68,30 @@ class AppTheme {
       onErrorContainer: AppColors.lightOnErrorContainer,
       outline: AppColors.lightOutline,
       outlineVariant: AppColors.lightOutlineVariant,
-      inverseSurface: Color(0xFF2D2A34),
-      onInverseSurface: Color(0xFFEEECF5),
+      inverseSurface: AppColors.lightInverseSurface,
+      onInverseSurface: AppColors.lightOnInverseSurface,
       inversePrimary: AppColors.mulberryLight,
-      shadow: Color(0xFF000000),
-      scrim: Color(0xFF000000),
+      shadow: AppColors.shadow,
+      scrim: AppColors.scrim,
     ),
   );
 
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,
-    fontFamily: 'Inter',
     scaffoldBackgroundColor: AppColors.darkBg,
+    textTheme: _buildTextTheme(Brightness.dark),
     colorScheme: const ColorScheme(
       brightness: Brightness.dark,
       primary: AppColors.coreMulberry,
-      onPrimary: Color(0xFF1A0A17),
+      onPrimary: AppColors.darkOnPrimary,
       primaryContainer: AppColors.mulberryDeep,
       onPrimaryContainer: AppColors.mulberryLight,
       secondary: AppColors.corePetal,
-      onSecondary: Color(0xFF2A0D1A),
+      onSecondary: AppColors.darkOnSecondary,
       secondaryContainer: AppColors.petalDeep,
       onSecondaryContainer: AppColors.petalLight,
       tertiary: AppColors.coreWisteria,
-      onTertiary: Color(0xFF100E2A),
+      onTertiary: AppColors.darkOnTertiary,
       tertiaryContainer: AppColors.wisteriaDeep,
       onTertiaryContainer: AppColors.wisteriaLight,
       surface: AppColors.darkBg,
@@ -81,11 +111,11 @@ class AppTheme {
       onErrorContainer: AppColors.darkOnErrorContainer,
       outline: AppColors.darkOutline,
       outlineVariant: AppColors.darkOutlineVariant,
-      inverseSurface: Color(0xFFE5E3EB),
-      onInverseSurface: Color(0xFF1A1820),
+      inverseSurface: AppColors.darkInverseSurface,
+      onInverseSurface: AppColors.darkOnInverseSurface,
       inversePrimary: AppColors.mulberryDeep,
-      shadow: Color(0xFF000000),
-      scrim: Color(0xFF000000),
+      shadow: AppColors.shadow,
+      scrim: AppColors.scrim,
     ),
   );
 }

@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.2
+  provider: ^6.1.5+1
+  lottie: ^3.5.1
+  google_fonts: ^8.2.1
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +21,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/

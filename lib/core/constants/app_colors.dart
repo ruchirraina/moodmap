@@ -24,6 +24,14 @@ class AppColors {
   static const Color lightOnSurfaceVariant = Color(0xFF4A4758);
   static const Color lightOutline = Color(0xFF9A97A8);
   static const Color lightOutlineVariant = Color(0xFFCECBD8);
+  static const Color lightOnPrimary = Color(0xFFFAF0F8);
+  static const Color lightOnPrimaryContainer = Color(0xFF2A0D20);
+  static const Color lightOnSecondary = Color(0xFFFDF2F6);
+  static const Color lightOnSecondaryContainer = Color(0xFF330D1E);
+  static const Color lightOnTertiary = Color(0xFFF4F2FC);
+  static const Color lightOnTertiaryContainer = Color(0xFF1A1838);
+  static const Color lightInverseSurface = Color(0xFF2D2A34);
+  static const Color lightOnInverseSurface = Color(0xFFEEECF5);
 
   static const Color darkBg = Color(0xFF131118);
   static const Color darkSurfaceContainerLowest = Color(0xFF0D0C10);
@@ -37,6 +45,11 @@ class AppColors {
   static const Color darkOnSurfaceVariant = Color(0xFFADA9BE);
   static const Color darkOutline = Color(0xFF6A6778);
   static const Color darkOutlineVariant = Color(0xFF38353F);
+  static const Color darkOnPrimary = Color(0xFF1A0A17);
+  static const Color darkOnSecondary = Color(0xFF2A0D1A);
+  static const Color darkOnTertiary = Color(0xFF100E2A);
+  static const Color darkInverseSurface = Color(0xFFE5E3EB);
+  static const Color darkOnInverseSurface = Color(0xFF1A1820);
 
   static const Color lightError = Color(0xFF8C2A35);
   static const Color lightOnError = Color(0xFFFFFFFF);
@@ -47,4 +60,7 @@ class AppColors {
   static const Color darkOnError = Color(0xFF1A0508);
   static const Color darkErrorContainer = Color(0xFF8C2A35);
   static const Color darkOnErrorContainer = Color(0xFFFCEEF0);
+
+  static const Color shadow = Color(0xFF000000);
+  static const Color scrim = Color(0xFF000000);
 }
