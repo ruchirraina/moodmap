@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -130,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: FilledButton(
                           onPressed: () {
                             if (!_introController.isCompleted) return;
-                            // Navigate to onboarding flow in the next step
+                            context.go(AppRoutes.onboardingPath);
                           },
                           child: const Text(
                             'Get Started',
