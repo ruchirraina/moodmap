@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_routes.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/widgets/shake_widget.dart';
 import '../../constants/auth_constants.dart';
 import '../providers/sign_in_provider.dart';
 
@@ -114,6 +116,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SignInProvider>();
+    final isAnyLoading = provider.isEmailLoading || provider.isGoogleLoading;
 
     return Scaffold(
       body: Focus(
@@ -123,34 +126,32 @@ class _SignInScreenState extends State<SignInScreen> {
             onTap: () {
               _unfocusNode.requestFocus();
             },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AuthConstants.horizontalPadding,
-                    vertical: AuthConstants.verticalPadding,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight:
-                          constraints.maxHeight -
-                          (AuthConstants.verticalPadding * 2),
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AuthConstants.horizontalPadding,
+                      vertical: AuthConstants.verticalPadding,
                     ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            AuthConstants.signInTitleText,
-                            style: Theme.of(context).textTheme.displaySmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AuthConstants.spacingLarge),
-                          TextFormField(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          AuthConstants.signInTitleText,
+                          style: Theme.of(context).textTheme.displaySmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AuthConstants.spacingLarge),
+                        ShakeWidget(
+                          shouldShake: provider.emailError != null,
+                          child: TextFormField(
                             controller: _emailController,
                             focusNode: _emailFocusNode,
                             keyboardType: TextInputType.emailAddress,
+                            enabled: !isAnyLoading,
                             decoration: _buildInputDecoration(
                               context,
                               label: AuthConstants.emailLabel,
@@ -162,11 +163,15 @@ class _SignInScreenState extends State<SignInScreen> {
                               );
                             },
                           ),
-                          const SizedBox(height: AuthConstants.spacingSmall),
-                          TextFormField(
+                        ),
+                        const SizedBox(height: AuthConstants.spacingSmall),
+                        ShakeWidget(
+                          shouldShake: provider.passwordError != null,
+                          child: TextFormField(
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
                             obscureText: !provider.isPasswordVisible,
+                            enabled: !isAnyLoading,
                             decoration: _buildInputDecoration(
                               context,
                               label: AuthConstants.passwordEnterLabel,
@@ -197,125 +202,224 @@ class _SignInScreenState extends State<SignInScreen> {
                               );
                             },
                           ),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () {
-                                _unfocusNode.requestFocus();
-                                context.push(AppRoutes.forgotPasswordPath);
-                              },
-                              child: const Text(
-                                AuthConstants.forgotPasswordText,
-                              ),
-                            ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: isAnyLoading
+                                ? null
+                                : () {
+                                    _unfocusNode.requestFocus();
+                                    AppRouter.isNavigatingToForgotPassword =
+                                        true;
+                                    context
+                                        .push(AppRoutes.forgotPasswordPath)
+                                        .whenComplete(() {
+                                          Future.delayed(
+                                            const Duration(
+                                              milliseconds:
+                                                  AppRouter.slideDurationMs,
+                                            ),
+                                            () {
+                                              AppRouter
+                                                      .isNavigatingToForgotPassword =
+                                                  false;
+                                            },
+                                          );
+                                        });
+                                  },
+                            child: const Text(AuthConstants.forgotPasswordText),
                           ),
-                          const SizedBox(height: AuthConstants.spacingLarge),
-                          SizedBox(
-                            height: AuthConstants.buttonHeight,
-                            child: FilledButton(
-                              onPressed: () {
-                                _unfocusNode.requestFocus();
-                                final isValid = context
-                                    .read<SignInProvider>()
-                                    .validateForm(
-                                      _emailController.text,
-                                      _passwordController.text,
-                                    );
-                                if (isValid) {
-                                  // TODO: Proceed to Firebase sign in logic
-                                }
-                              },
-                              child: const Text(
-                                AuthConstants.continueButtonText,
-                                style: TextStyle(
-                                  fontSize: AuthConstants.buttonTextSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: AuthConstants.spacingMedium),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                AuthConstants.newAccountText,
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  _navigateAndReset(() {
-                                    if (context.canPop()) {
-                                      context.pop();
-                                    } else {
-                                      context.push(
-                                        AppRoutes.signUpPath,
-                                        extra: {'isPush': true},
-                                      );
+                        ),
+                        const SizedBox(height: AuthConstants.spacingLarge),
+                        SizedBox(
+                          height: AuthConstants.buttonHeight,
+                          child: FilledButton(
+                            onPressed: isAnyLoading
+                                ? null
+                                : () async {
+                                    FocusScope.of(context).unfocus();
+                                    final success = await context
+                                        .read<SignInProvider>()
+                                        .signIn(
+                                          _emailController.text,
+                                          _passwordController.text,
+                                        );
+                                    if (success && mounted) {
+                                      // TODO: Navigate to Home Screen
                                     }
-                                  });
-                                },
-                                child: const Text(
-                                  AuthConstants.signUpButtonText,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AuthConstants.spacingMedium),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              const Expanded(child: Divider()),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AuthConstants.spacingSmall,
-                                ),
-                                child: Text(
-                                  AuthConstants.orText,
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
+                                  },
+                            child: provider.isEmailLoading
+                                ? const SizedBox(
+                                    height: AuthConstants.iconSizeSmall,
+                                    width: AuthConstants.iconSizeSmall,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: AuthConstants.borderWidth,
+                                    ),
+                                  )
+                                : const Text(
+                                    AuthConstants.continueButtonText,
+                                    style: TextStyle(
+                                      fontSize: AuthConstants.buttonTextSize,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const Expanded(child: Divider()),
-                            ],
                           ),
-                          const SizedBox(height: AuthConstants.spacingMedium),
-                          SizedBox(
-                            height: AuthConstants.buttonHeight,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                _unfocusNode.requestFocus();
-                              },
-                              icon: Image.asset(
-                                AppAssets.googleLogo,
-                                height: AuthConstants.iconSizeSmall,
-                                width: AuthConstants.iconSizeSmall,
+                        ),
+                        const SizedBox(height: AuthConstants.spacingMedium),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AuthConstants.newAccountText,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
-                              label: Text(
-                                AuthConstants.googleButtonText,
+                            ),
+                            TextButton(
+                              onPressed: isAnyLoading
+                                  ? null
+                                  : () {
+                                      _navigateAndReset(() {
+                                        if (context.canPop()) {
+                                          context.pop();
+                                        } else {
+                                          context.push(
+                                            AppRoutes.signUpPath,
+                                            extra: {'isPush': true},
+                                          );
+                                        }
+                                      });
+                                    },
+                              child: const Text(AuthConstants.signUpButtonText),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AuthConstants.spacingMedium),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: provider.genericError != null
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: AuthConstants.spacingMedium,
+                                  ),
+                                  child: Dismissible(
+                                    key: Key(provider.genericError!),
+                                    onDismissed: (_) {
+                                      context
+                                          .read<SignInProvider>()
+                                          .clearGenericError();
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AuthConstants.spacingMedium,
+                                        vertical: AuthConstants.spacingSmall,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .errorContainer,
+                                        borderRadius: BorderRadius.circular(
+                                          AuthConstants.borderRadius,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        provider.genericError!,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onErrorContainer,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AuthConstants.spacingSmall,
+                              ),
+                              child: Text(
+                                AuthConstants.orText,
                                 style: TextStyle(
-                                  fontSize: AuthConstants.buttonTextSize,
-                                  fontWeight: FontWeight.bold,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onSurface,
+                                      .onSurfaceVariant,
                                 ),
                               ),
                             ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: AuthConstants.spacingMedium),
+                        SizedBox(
+                          height: AuthConstants.buttonHeight,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface,
+                            ),
+                            onPressed: isAnyLoading
+                                ? null
+                                : () async {
+                                    FocusScope.of(context).unfocus();
+                                    final currentProvider = context
+                                        .read<SignInProvider>();
+                                    currentProvider.clearErrors();
+                                    final success = await currentProvider
+                                        .signInWithGoogle();
+                                    if (success && mounted) {
+                                      // TODO: Navigate to Home Screen
+                                    }
+                                  },
+                            child: provider.isGoogleLoading
+                                ? const SizedBox(
+                                    height: AuthConstants.iconSizeSmall,
+                                    width: AuthConstants.iconSizeSmall,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: AuthConstants.borderWidth,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Opacity(
+                                        opacity: isAnyLoading ? 0.5 : 1.0,
+                                        child: Image.asset(
+                                          AppAssets.googleLogo,
+                                          height: AuthConstants.iconSizeSmall,
+                                          width: AuthConstants.iconSizeSmall,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: AuthConstants.spacingSmall,
+                                      ),
+                                      const Text(
+                                        AuthConstants.googleButtonText,
+                                        style: TextStyle(
+                                          fontSize:
+                                              AuthConstants.buttonTextSize,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         ),

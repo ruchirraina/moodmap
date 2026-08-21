@@ -12,9 +12,23 @@ import '../../features/auth/presentation/providers/sign_in_provider.dart';
 import '../../features/auth/presentation/providers/forgot_password_provider.dart';
 import '../constants/app_routes.dart';
 
+class _ConditionalOffsetTween extends Tween<Offset> {
+  _ConditionalOffsetTween({super.begin, super.end});
+
+  @override
+  Offset lerp(double t) {
+    if (AppRouter.isNavigatingToForgotPassword) {
+      return Offset.zero;
+    }
+    return super.lerp(t);
+  }
+}
+
 class AppRouter {
   static const int fadeDurationMs = 600;
   static const int slideDurationMs = 400;
+
+  static bool isNavigatingToForgotPassword = false;
 
   static CustomTransitionPage _buildFadeTransitionPage({
     required Widget child,
@@ -104,6 +118,18 @@ class AppRouter {
             ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
+                  final slideOutToLeft =
+                      _ConditionalOffsetTween(
+                        begin: Offset.zero,
+                        end: const Offset(-1.0, 0.0),
+                      ).animate(
+                        CurvedAnimation(
+                          parent: secondaryAnimation,
+                          curve: Curves.easeOutCubic,
+                          reverseCurve: Curves.easeInCubic,
+                        ),
+                      );
+
                   if (isPush) {
                     final slideInFromLeft =
                         Tween<Offset>(
@@ -118,8 +144,11 @@ class AppRouter {
                         );
 
                     return SlideTransition(
-                      position: slideInFromLeft,
-                      child: child,
+                      position: slideOutToLeft,
+                      child: SlideTransition(
+                        position: slideInFromLeft,
+                        child: child,
+                      ),
                     );
                   } else {
                     final scaleIn = Tween<double>(begin: 0.9, end: 1.0).animate(
@@ -138,9 +167,12 @@ class AppRouter {
                       ),
                     );
 
-                    return FadeTransition(
-                      opacity: fadeIn,
-                      child: ScaleTransition(scale: scaleIn, child: child),
+                    return SlideTransition(
+                      position: slideOutToLeft,
+                      child: FadeTransition(
+                        opacity: fadeIn,
+                        child: ScaleTransition(scale: scaleIn, child: child),
+                      ),
                     );
                   }
                 },
@@ -163,6 +195,18 @@ class AppRouter {
             ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
+                  final slideOutToRight =
+                      _ConditionalOffsetTween(
+                        begin: Offset.zero,
+                        end: const Offset(1.0, 0.0),
+                      ).animate(
+                        CurvedAnimation(
+                          parent: secondaryAnimation,
+                          curve: Curves.easeOutCubic,
+                          reverseCurve: Curves.easeInCubic,
+                        ),
+                      );
+
                   if (isPush) {
                     final slideInFromRight =
                         Tween<Offset>(
@@ -177,8 +221,11 @@ class AppRouter {
                         );
 
                     return SlideTransition(
-                      position: slideInFromRight,
-                      child: child,
+                      position: slideOutToRight,
+                      child: SlideTransition(
+                        position: slideInFromRight,
+                        child: child,
+                      ),
                     );
                   } else {
                     final scaleIn = Tween<double>(begin: 0.9, end: 1.0).animate(
@@ -197,9 +244,12 @@ class AppRouter {
                       ),
                     );
 
-                    return FadeTransition(
-                      opacity: fadeIn,
-                      child: ScaleTransition(scale: scaleIn, child: child),
+                    return SlideTransition(
+                      position: slideOutToRight,
+                      child: FadeTransition(
+                        opacity: fadeIn,
+                        child: ScaleTransition(scale: scaleIn, child: child),
+                      ),
                     );
                   }
                 },

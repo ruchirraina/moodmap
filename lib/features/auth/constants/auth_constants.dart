@@ -14,6 +14,7 @@ class AuthConstants {
   static const double buttonTextSize = 16.0;
 
   static const int navigateResetDelayMs = 500;
+  static const int minimumLoadingMs = 500;
   static const int nameMaxLength = 50;
   static const int passwordMinLength = 6;
 
@@ -49,7 +50,12 @@ class AuthConstants {
   static const String passwordLengthError =
       'Password must be at least 6 characters';
   static const String emailInUseError = 'Email already in use';
+  static const String invalidEmailFormatError = 'Email is invalid';
   static const String invalidCredentialsError = 'Invalid email or password';
   static const String resetLinkSentMessage =
-      'Reset link sent to email if linked to MoodMap.';
+      'Reset link sent to email if linked to MoodMap';
+  static const String googleWebClientId =
+      '1046150734426-msi6448t9ikh6juoer0in48r5bv4sq6d.apps.googleusercontent.com';
+  static const String googleIosClientId =
+      '1046150734426-6f7dlhobjcdk74bmdsffivpfv6ag9fsl.apps.googleusercontent.com';
 }

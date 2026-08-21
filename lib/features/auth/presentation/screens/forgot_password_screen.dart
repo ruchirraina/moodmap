@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/auth_constants.dart';
+import '../../../../core/widgets/shake_widget.dart';
 import '../providers/forgot_password_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -104,6 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final provider = context.watch<ForgotPasswordProvider>();
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: Focus(
         focusNode: _unfocusNode,
@@ -136,47 +138,102 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AuthConstants.spacingLarge),
-                          TextFormField(
-                            controller: _emailController,
-                            focusNode: _emailFocusNode,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: _buildInputDecoration(
-                              context,
-                              label: AuthConstants.emailLabel,
-                              errorText: provider.emailError,
+                          ShakeWidget(
+                            shouldShake: provider.emailError != null,
+                            child: TextFormField(
+                              controller: _emailController,
+                              focusNode: _emailFocusNode,
+                              keyboardType: TextInputType.emailAddress,
+                              enabled: !provider.isLoading,
+                              decoration: _buildInputDecoration(
+                                context,
+                                label: AuthConstants.emailLabel,
+                                errorText: provider.emailError,
+                              ),
+                              onChanged: (value) {
+                                context
+                                    .read<ForgotPasswordProvider>()
+                                    .onEmailChanged(value);
+                              },
                             ),
-                            onChanged: (value) {
-                              context
-                                  .read<ForgotPasswordProvider>()
-                                  .onEmailChanged(value);
-                            },
                           ),
                           const SizedBox(height: AuthConstants.spacingLarge),
                           SizedBox(
                             height: AuthConstants.buttonHeight,
                             child: FilledButton(
-                              onPressed: () {
-                                _unfocusNode.requestFocus();
-                                final isValid = context
-                                    .read<ForgotPasswordProvider>()
-                                    .validateForm(_emailController.text);
-                                if (isValid) {
-                                  context
-                                      .read<ForgotPasswordProvider>()
-                                      .showResetMessage();
-                                }
-                              },
-                              child: const Text(
-                                AuthConstants.sendResetLinkButtonText,
-                                style: TextStyle(
-                                  fontSize: AuthConstants.buttonTextSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              onPressed: provider.isLoading
+                                  ? null
+                                  : () async {
+                                      _unfocusNode.requestFocus();
+                                      ScaffoldMessenger.of(context)
+                                          .clearSnackBars();
+                                      await context
+                                          .read<ForgotPasswordProvider>()
+                                          .sendResetLink(_emailController.text);
+                                    },
+                              child: provider.isLoading
+                                  ? const SizedBox(
+                                      height: AuthConstants.iconSizeSmall,
+                                      width: AuthConstants.iconSizeSmall,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: AuthConstants.borderWidth,
+                                      ),
+                                    )
+                                  : const Text(
+                                      AuthConstants.sendResetLinkButtonText,
+                                      style: TextStyle(
+                                        fontSize: AuthConstants.buttonTextSize,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: AuthConstants.spacingLarge),
                           const Spacer(),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            child: provider.genericError != null
+                                ? Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: AuthConstants.spacingMedium,
+                                    ),
+                                    child: Dismissible(
+                                      key: Key(provider.genericError!),
+                                      onDismissed: (_) {
+                                        context
+                                            .read<ForgotPasswordProvider>()
+                                            .clearGenericError();
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal:
+                                              AuthConstants.spacingMedium,
+                                          vertical: AuthConstants.spacingSmall,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .errorContainer,
+                                          borderRadius: BorderRadius.circular(
+                                            AuthConstants.borderRadius,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          provider.genericError!,
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onErrorContainer,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
@@ -193,8 +250,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                             .hideResetMessage();
                                       },
                                       child: Container(
-                                        padding: const EdgeInsets.all(
-                                          AuthConstants.spacingMedium,
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal:
+                                              AuthConstants.spacingMedium,
+                                          vertical: AuthConstants.spacingSmall,
                                         ),
                                         decoration: BoxDecoration(
                                           color: Theme.of(context)

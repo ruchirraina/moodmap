@@ -50,22 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA2aDk9DWTVISKe2MLLJuFSPxFt-2yzvMI',
-    appId: '1:1089893444526:android:ce54737f158bc84f60763f',
-    messagingSenderId: '1089893444526',
-    projectId: 'moodmap-by-ruchir',
-    storageBucket: 'moodmap-by-ruchir.firebasestorage.app',
+    apiKey: 'AIzaSyBxv_ZtHv1ZgWgpAH-cFa7_S39B41Xe7FE',
+    appId: '1:1046150734426:android:57a38225c2c2916d196e63',
+    messagingSenderId: '1046150734426',
+    projectId: 'moodmap-by-luci',
+    storageBucket: 'moodmap-by-luci.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBOoRlr5KofKfjjr6YK8bUoiFdkdSHAGTk',
-    appId: '1:1089893444526:ios:78cb81e3ae376dbe60763f',
-    messagingSenderId: '1089893444526',
-    projectId: 'moodmap-by-ruchir',
-    storageBucket: 'moodmap-by-ruchir.firebasestorage.app',
-    androidClientId: '1089893444526-sf4o21gtls3dbn0aq0v7qu0vigqjsu1n.apps.googleusercontent.com',
-    iosClientId: '1089893444526-h07mftjjda3s496v8omrh3n4g98ucmq2.apps.googleusercontent.com',
+    apiKey: 'AIzaSyC5UlPxbK68Yf78R7VbuD-u59_raraoJV8',
+    appId: '1:1046150734426:ios:0a702c9a0fd2a3c3196e63',
+    messagingSenderId: '1046150734426',
+    projectId: 'moodmap-by-luci',
+    storageBucket: 'moodmap-by-luci.firebasestorage.app',
     iosBundleId: 'com.example.moodmap',
   );
-
 }
