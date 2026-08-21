@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_routes.dart';
 import '../../domain/models/onboarding_slide.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -131,7 +133,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             width: OnboardingScreen.buttonWidth,
                             height: OnboardingScreen.buttonHeight,
                             child: FilledButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                context.go(AppRoutes.signUpPath);
+                              },
                               child: const Text(
                                 OnboardingScreen.signUpButtonText,
                                 style: TextStyle(
@@ -154,7 +158,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  context.go(AppRoutes.signInPath);
+                                },
                                 child: const Text(
                                   OnboardingScreen.signInButtonText,
                                 ),

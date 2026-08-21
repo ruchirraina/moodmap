@@ -124,22 +124,19 @@ class _SplashScreenState extends State<SplashScreen>
                       left: SplashScreen.buttonHorizontalPadding,
                       right: SplashScreen.buttonHorizontalPadding,
                     ),
-                    child: ScaleTransition(
-                      scale: _buttonScale,
-                      child: SizedBox(
-                        width: SplashScreen.buttonWidth,
-                        height: SplashScreen.buttonHeight,
-                        child: FilledButton(
-                          onPressed: () {
-                            if (!_introController.isCompleted) return;
-                            context.go(AppRoutes.onboardingPath);
-                          },
-                          child: const Text(
-                            'Get Started',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: SizedBox(
+                      width: SplashScreen.buttonWidth * _buttonScale.value,
+                      height: SplashScreen.buttonHeight * _buttonScale.value,
+                      child: FilledButton(
+                        onPressed: () {
+                          if (!_introController.isCompleted) return;
+                          context.go(AppRoutes.onboardingPath);
+                        },
+                        child: const Text(
+                          'Get Started',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

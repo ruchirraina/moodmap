@@ -1,34 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_colors.dart';
 
 class AppTheme {
   static TextTheme _buildTextTheme(Brightness brightness) {
     final baseTheme = ThemeData(brightness: brightness, useMaterial3: true);
-    final baseTextTheme = GoogleFonts.latoTextTheme(baseTheme.textTheme);
+    final baseTextTheme = baseTheme.textTheme.apply(fontFamily: 'Lato');
 
     return baseTextTheme.copyWith(
-      displayLarge: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.displayLarge,
+      displayLarge: baseTextTheme.displayLarge?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      displayMedium: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.displayMedium,
+      displayMedium: baseTextTheme.displayMedium?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      displaySmall: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.displaySmall,
+      displaySmall: baseTextTheme.displaySmall?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      headlineLarge: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.headlineLarge,
+      headlineLarge: baseTextTheme.headlineLarge?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      headlineMedium: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.headlineMedium,
+      headlineMedium: baseTextTheme.headlineMedium?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      headlineSmall: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.headlineSmall,
+      headlineSmall: baseTextTheme.headlineSmall?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
-      titleLarge: GoogleFonts.playfairDisplay(
-        textStyle: baseTextTheme.titleLarge,
+      titleLarge: baseTextTheme.titleLarge?.copyWith(
+        fontFamily: 'Playfair Display',
       ),
     );
   }

@@ -7,4 +7,6 @@ class AppAssets {
   static const String onboarding1 = 'assets/animations/onboarding_1.json';
   static const String onboarding2 = 'assets/animations/onboarding_2.json';
   static const String onboarding3 = 'assets/animations/onboarding_3.json';
+
+  static const String googleLogo = 'assets/images/google_logo.webp';
 }
