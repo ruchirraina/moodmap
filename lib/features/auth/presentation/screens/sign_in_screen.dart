@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_animations.dart';
 import '../../../../core/widgets/shake_widget.dart';
 import '../../constants/auth_constants.dart';
 import '../providers/sign_in_provider.dart';
@@ -55,17 +57,16 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  void _navigateAndReset(VoidCallback navigateAction) {
+  void _navigateAndReset(BuildContext context, VoidCallback navigateAction) {
     _unfocusNode.requestFocus();
     navigateAction();
     Future.delayed(
       const Duration(milliseconds: AuthConstants.navigateResetDelayMs),
       () {
-        if (mounted) {
-          _emailController.clear();
-          _passwordController.clear();
-          context.read<SignInProvider>().reset();
-        }
+        if (!context.mounted) return;
+        _emailController.clear();
+        _passwordController.clear();
+        context.read<SignInProvider>().reset();
       },
     );
   }
@@ -83,7 +84,7 @@ class _SignInScreenState extends State<SignInScreen> {
     final activeBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
       borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.secondary,
         width: AuthConstants.borderWidth,
       ),
     );
@@ -206,6 +207,11 @@ class _SignInScreenState extends State<SignInScreen> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .tertiary,
+                            ),
                             onPressed: isAnyLoading
                                 ? null
                                 : () {
@@ -216,14 +222,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                         .push(AppRoutes.forgotPasswordPath)
                                         .whenComplete(() {
                                           Future.delayed(
-                                            const Duration(
-                                              milliseconds:
-                                                  AppRouter.slideDurationMs,
-                                            ),
+                                            AppAnimations.slideDuration,
                                             () {
-                                              AppRouter
-                                                      .isNavigatingToForgotPassword =
-                                                  false;
+                                              if (mounted) {
+                                                AppRouter
+                                                        .isNavigatingToForgotPassword =
+                                                    false;
+                                              }
                                             },
                                           );
                                         });
@@ -245,17 +250,22 @@ class _SignInScreenState extends State<SignInScreen> {
                                           _emailController.text,
                                           _passwordController.text,
                                         );
-                                    if (success && mounted) {
-                                      // TODO: Navigate to Home Screen
+                                    if (!context.mounted) return;
+                                    if (success) {
+                                      AppRouter.navigateSequentially(
+                                        context,
+                                        AppRoutes.homePath,
+                                      );
                                     }
                                   },
                             child: provider.isEmailLoading
-                                ? const SizedBox(
-                                    height: AuthConstants.iconSizeSmall,
-                                    width: AuthConstants.iconSizeSmall,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: AuthConstants.borderWidth,
-                                    ),
+                                ? SpinKitThreeBounce(
+                                    color:
+                                        Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? Colors.black
+                                        : Colors.white,
+                                    size: AuthConstants.iconSizeSmall,
                                   )
                                 : const Text(
                                     AuthConstants.continueButtonText,
@@ -277,10 +287,15 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             ),
                             TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .tertiary,
+                              ),
                               onPressed: isAnyLoading
                                   ? null
                                   : () {
-                                      _navigateAndReset(() {
+                                      _navigateAndReset(context, () {
                                         if (context.canPop()) {
                                           context.pop();
                                         } else {
@@ -297,7 +312,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                         const SizedBox(height: AuthConstants.spacingMedium),
                         AnimatedSize(
-                          duration: const Duration(milliseconds: 300),
+                          duration: AppAnimations.animatedSizeDuration,
                           curve: Curves.easeInOut,
                           child: provider.genericError != null
                               ? Padding(
@@ -377,17 +392,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                     currentProvider.clearErrors();
                                     final success = await currentProvider
                                         .signInWithGoogle();
-                                    if (success && mounted) {
-                                      // TODO: Navigate to Home Screen
+                                    if (!context.mounted) return;
+                                    if (success) {
+                                      AppRouter.navigateSequentially(
+                                        context,
+                                        AppRoutes.homePath,
+                                      );
                                     }
                                   },
                             child: provider.isGoogleLoading
-                                ? const SizedBox(
-                                    height: AuthConstants.iconSizeSmall,
-                                    width: AuthConstants.iconSizeSmall,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: AuthConstants.borderWidth,
-                                    ),
+                                ? SpinKitThreeBounce(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
+                                    size: AuthConstants.iconSizeSmall,
                                   )
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,

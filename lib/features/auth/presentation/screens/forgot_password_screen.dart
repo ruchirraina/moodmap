@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../constants/auth_constants.dart';
+import '../../../../core/constants/app_animations.dart';
 import '../../../../core/widgets/shake_widget.dart';
 import '../providers/forgot_password_provider.dart';
 
@@ -50,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final activeBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
       borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.secondary,
         width: AuthConstants.borderWidth,
       ),
     );
@@ -172,12 +174,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           .sendResetLink(_emailController.text);
                                     },
                               child: provider.isLoading
-                                  ? const SizedBox(
-                                      height: AuthConstants.iconSizeSmall,
-                                      width: AuthConstants.iconSizeSmall,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: AuthConstants.borderWidth,
-                                      ),
+                                  ? SpinKitThreeBounce(
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.light
+                                          ? Colors.black
+                                          : Colors.white,
+                                      size: AuthConstants.iconSizeSmall,
                                     )
                                   : const Text(
                                       AuthConstants.sendResetLinkButtonText,
@@ -191,7 +194,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           const SizedBox(height: AuthConstants.spacingLarge),
                           const Spacer(),
                           AnimatedSize(
-                            duration: const Duration(milliseconds: 300),
+                            duration: AppAnimations.animatedSizeDuration,
                             curve: Curves.easeInOut,
                             child: provider.genericError != null
                                 ? Padding(
@@ -235,7 +238,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 : const SizedBox.shrink(),
                           ),
                           AnimatedSize(
-                            duration: const Duration(milliseconds: 300),
+                            duration: AppAnimations.animatedSizeDuration,
                             curve: Curves.easeInOut,
                             child: provider.isResetMessageVisible
                                 ? Padding(

@@ -178,8 +178,10 @@ class SignUpProvider extends ChangeNotifier {
       );
     }
 
-    _isEmailLoading = false;
-    notifyListeners();
+    if (!isSuccess) {
+      _isEmailLoading = false;
+      notifyListeners();
+    }
     return isSuccess;
   }
 
@@ -214,8 +216,10 @@ class SignUpProvider extends ChangeNotifier {
       );
     }
 
-    _isGoogleLoading = false;
-    notifyListeners();
+    if (!isSuccess) {
+      _isGoogleLoading = false;
+      notifyListeners();
+    }
     return isSuccess;
   }
 

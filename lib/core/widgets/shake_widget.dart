@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../constants/app_animations.dart';
+
 class ShakeWidget extends StatefulWidget {
   final Widget child;
   final bool shouldShake;
@@ -25,7 +27,7 @@ class _ShakeWidgetState extends State<ShakeWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300), // Sped up slightly
+      duration: AppAnimations.shakeDuration,
     );
     if (widget.shouldShake) {
       _controller.forward();
@@ -51,11 +53,11 @@ class _ShakeWidgetState extends State<ShakeWidget>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        // Dampens the shake so it naturally settles instead of stopping abruptly
         final damping = 1.0 - _controller.value;
-
-        // Reduced the swing distance from 8 down to 4
-        final dx = sin(_controller.value * 4 * pi) * 4 * damping;
+        final dx =
+            sin(_controller.value * AppAnimations.shakeSwingCount * pi) *
+            AppAnimations.shakeDistance *
+            damping;
 
         return Transform.translate(offset: Offset(dx, 0), child: child);
       },

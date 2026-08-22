@@ -2,21 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../constants/splash_constants.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
-  static const int buttonStartMilliseconds = 1300;
-  static const int idleAnimationDurationMs = 2000;
-  static const double idleScaleBegin = 1.0;
-  static const double idleScaleEnd = 1.03;
-  static const double buttonHeight = 56.0;
-  static const double buttonWidth = 240.0;
-  static const double buttonHorizontalPadding = 24.0;
-  static const double buttonBottomPadding = 48.0;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -36,15 +29,15 @@ class _SplashScreenState extends State<SplashScreen>
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(
-        milliseconds: SplashScreen.idleAnimationDurationMs,
+        milliseconds: SplashConstants.idleAnimationDurationMs,
       ),
     );
 
     _buttonOpacity = const AlwaysStoppedAnimation(0.0);
     _buttonScale =
         Tween<double>(
-          begin: SplashScreen.idleScaleBegin,
-          end: SplashScreen.idleScaleEnd,
+          begin: SplashConstants.idleScaleBegin,
+          end: SplashConstants.idleScaleEnd,
         ).animate(
           CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
         );
@@ -77,35 +70,59 @@ class _SplashScreenState extends State<SplashScreen>
                   onLoaded: (composition) {
                     _introController.duration = composition.duration;
 
-                    final startFraction =
-                        (SplashScreen.buttonStartMilliseconds /
-                                composition.duration.inMilliseconds)
-                            .clamp(0.0, 1.0);
+                    final isLoggedIn =
+                        FirebaseAuth.instance.currentUser != null;
 
-                    setState(() {
-                      _buttonOpacity = Tween<double>(begin: 0.0, end: 1.0)
-                          .animate(
-                            CurvedAnimation(
-                              parent: _introController,
-                              curve: Interval(
-                                startFraction,
-                                1.0,
-                                curve: Curves.easeInOut,
-                              ),
+                    if (isLoggedIn) {
+                      Future.delayed(
+                        composition.duration +
+                            const Duration(
+                              milliseconds:
+                                  SplashConstants.loginTransitionDelayMs,
                             ),
-                          );
-                    });
+                        () {
+                          if (context.mounted) {
+                            context.go(AppRoutes.homePath);
+                          }
+                        },
+                      );
+                    } else {
+                      final startFraction =
+                          (SplashConstants.buttonStartMilliseconds /
+                                  composition.duration.inMilliseconds)
+                              .clamp(
+                                SplashConstants.animationStartFraction,
+                                SplashConstants.animationEndFraction,
+                              );
 
-                    Future.delayed(
-                      const Duration(
-                        milliseconds: SplashScreen.buttonStartMilliseconds,
-                      ),
-                      () {
-                        if (mounted) {
-                          _idleController.repeat(reverse: true);
-                        }
-                      },
-                    );
+                      setState(() {
+                        _buttonOpacity =
+                            Tween<double>(
+                              begin: SplashConstants.animationStartFraction,
+                              end: SplashConstants.animationEndFraction,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: _introController,
+                                curve: Interval(
+                                  startFraction,
+                                  SplashConstants.animationEndFraction,
+                                  curve: Curves.easeInOut,
+                                ),
+                              ),
+                            );
+                      });
+
+                      Future.delayed(
+                        const Duration(
+                          milliseconds: SplashConstants.buttonStartMilliseconds,
+                        ),
+                        () {
+                          if (mounted) {
+                            _idleController.repeat(reverse: true);
+                          }
+                        },
+                      );
+                    }
 
                     FlutterNativeSplash.remove();
                     _introController.forward();
@@ -120,22 +137,22 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _buttonOpacity.value,
                   child: Padding(
                     padding: const EdgeInsets.only(
-                      bottom: SplashScreen.buttonBottomPadding,
-                      left: SplashScreen.buttonHorizontalPadding,
-                      right: SplashScreen.buttonHorizontalPadding,
+                      bottom: SplashConstants.buttonBottomPadding,
+                      left: SplashConstants.buttonHorizontalPadding,
+                      right: SplashConstants.buttonHorizontalPadding,
                     ),
                     child: SizedBox(
-                      width: SplashScreen.buttonWidth * _buttonScale.value,
-                      height: SplashScreen.buttonHeight * _buttonScale.value,
+                      width: SplashConstants.buttonWidth * _buttonScale.value,
+                      height: SplashConstants.buttonHeight * _buttonScale.value,
                       child: FilledButton(
                         onPressed: () {
                           if (!_introController.isCompleted) return;
                           context.go(AppRoutes.onboardingPath);
                         },
                         child: const Text(
-                          'Get Started',
+                          SplashConstants.getStartedButtonText,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: SplashConstants.buttonTextSize,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

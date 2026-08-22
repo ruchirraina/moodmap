@@ -1,0 +1,139 @@
+import 'package:flutter/material.dart';
+
+import '../../constants/profile_constants.dart';
+import '../../data/services/profile_service.dart';
+
+class ProfileProvider extends ChangeNotifier {
+  final ProfileService _profileService = ProfileService();
+
+  bool _isLoading = false;
+  bool _isNameFocused = false;
+  String? _error;
+  String? _nameError;
+
+  String? _cachedName;
+  String? _cachedPhotoURL;
+  String? _cachedEmail;
+
+  ProfileProvider() {
+    _cachedName = _profileService.currentUser?.displayName;
+    _cachedPhotoURL = _profileService.currentUser?.photoURL;
+    _cachedEmail = _profileService.currentUser?.email;
+  }
+
+  bool get isLoading => _isLoading;
+  bool get isNameFocused => _isNameFocused;
+  String? get error => _error;
+  String? get nameError => _nameError;
+
+  String? get currentName => _cachedName;
+  String? get photoURL => _cachedPhotoURL;
+  String? get email => _cachedEmail;
+
+  void onNameFocusChanged(bool hasFocus, String value) {
+    if (_isLoading) return;
+
+    final lostFocus = _isNameFocused && !hasFocus;
+    _isNameFocused = hasFocus;
+
+    if (lostFocus && value.trim().isEmpty) {
+      _nameError = ProfileConstants.emptyNameError;
+    }
+    notifyListeners();
+  }
+
+  void onNameChanged(String value) {
+    if (value.trim().isEmpty) {
+      _nameError = ProfileConstants.emptyNameError;
+    } else if (value.trim().length > ProfileConstants.nameMaxLength) {
+      _nameError = ProfileConstants.nameLengthError;
+    } else if (_nameError != null) {
+      _nameError = null;
+    }
+    notifyListeners();
+  }
+
+  bool validateForm(String name) {
+    _nameError = null;
+    bool hasError = false;
+
+    if (name.trim().isEmpty) {
+      _nameError = ProfileConstants.emptyNameError;
+      hasError = true;
+    } else if (name.trim().length > ProfileConstants.nameMaxLength) {
+      _nameError = ProfileConstants.nameLengthError;
+      hasError = true;
+    }
+
+    if (hasError) notifyListeners();
+    return !hasError;
+  }
+
+  void clearNameError() {
+    if (_nameError != null) {
+      _nameError = null;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateName(String newName) async {
+    if (!validateForm(newName)) {
+      return false;
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _profileService.updateDisplayName(newName.trim());
+      await _profileService.currentUser?.reload();
+      _cachedName = newName.trim();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = ProfileConstants.genericError;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> signOut() async {
+    _isLoading = true;
+    notifyListeners();
+    await _profileService.signOut();
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> deleteAccount() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _profileService.deleteAccount();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      if (e.toString() == 'requires-recent-login') {
+        _error = ProfileConstants.reauthRequiredError;
+      } else {
+        _error = ProfileConstants.genericError;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void clearError() {
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
+  }
+}

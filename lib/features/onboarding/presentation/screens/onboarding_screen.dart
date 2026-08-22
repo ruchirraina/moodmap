@@ -114,7 +114,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           slide.title,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(height: OnboardingScreen.spacingSmall),
                         Text(
@@ -187,7 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   dotHeight: OnboardingScreen.dotSize,
                   dotWidth: OnboardingScreen.dotSize,
                   spacing: OnboardingScreen.dotSpacing,
-                  activeDotColor: Theme.of(context).colorScheme.primary,
+                  activeDotColor: Theme.of(context).colorScheme.tertiary,
                   dotColor: Theme.of(context)
                       .colorScheme
                       .surfaceContainerHighest,
