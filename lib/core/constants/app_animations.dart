@@ -6,6 +6,10 @@ class AppAnimations {
   static const Duration slideDuration = Duration(milliseconds: 400);
   static const Duration shakeDuration = Duration(milliseconds: 300);
   static const Duration animatedSizeDuration = Duration(milliseconds: 300);
+  static const Duration sequentialTransitionDuration = Duration(
+    milliseconds: 800,
+  );
+  static const Duration sequentialDelayDuration = Duration(milliseconds: 1000);
 
   // Transition Scales
   static const double scaleBegin = 0.9;

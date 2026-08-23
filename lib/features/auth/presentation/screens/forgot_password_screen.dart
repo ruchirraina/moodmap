@@ -52,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final activeBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
       borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.secondary,
+        color: Theme.of(context).colorScheme.primary,
         width: AuthConstants.borderWidth,
       ),
     );
@@ -163,6 +163,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           SizedBox(
                             height: AuthConstants.buttonHeight,
                             child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondary,
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondary,
+                              ),
                               onPressed: provider.isLoading
                                   ? null
                                   : () async {
@@ -175,11 +183,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     },
                               child: provider.isLoading
                                   ? SpinKitThreeBounce(
-                                      color:
-                                          Theme.of(context).brightness ==
-                                              Brightness.light
-                                          ? Colors.black
-                                          : Colors.white,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(
+                                            alpha:
+                                                AuthConstants.disabledTextAlpha,
+                                          ),
                                       size: AuthConstants.iconSizeSmall,
                                     )
                                   : const Text(

@@ -6,9 +6,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
+import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/routing/app_router.dart';
+import 'features/journal/presentation/providers/journal_provider.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +23,9 @@ void main() async {
   final savedTheme = prefs.getString(ThemeProvider.themeKey);
   ThemeMode initialMode = ThemeMode.system;
 
-  if (savedTheme == 'light') {
+  if (savedTheme == ThemeProvider.valueLight) {
     initialMode = ThemeMode.light;
-  } else if (savedTheme == 'dark') {
+  } else if (savedTheme == ThemeProvider.valueDark) {
     initialMode = ThemeMode.dark;
   }
 
@@ -42,11 +44,12 @@ class MoodMapApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(initialThemeMode: initialThemeMode),
         ),
+        ChangeNotifierProvider(create: (_) => JournalProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp.router(
-            title: 'MoodMap',
+            title: AppConstants.appName,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,

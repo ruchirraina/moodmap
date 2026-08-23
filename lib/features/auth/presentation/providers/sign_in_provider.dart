@@ -114,10 +114,10 @@ class SignInProvider extends ChangeNotifier {
       isSuccess = true;
     } catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage == 'Invalid email or password.') {
+      if (errorMessage == AuthConstants.excInvalidCreds) {
         _emailError = AuthConstants.invalidCredentialsError;
         _passwordError = AuthConstants.invalidCredentialsError;
-      } else if (errorMessage == 'Please enter a valid email address.') {
+      } else if (errorMessage == AuthConstants.excInvalidEmail) {
         _emailError = AuthConstants.invalidEmailFormatError;
       } else {
         _genericError = errorMessage;
@@ -156,7 +156,7 @@ class SignInProvider extends ChangeNotifier {
       isSuccess = true;
     } catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage != 'Sign in aborted by user.') {
+      if (errorMessage != AuthConstants.excSignInAborted) {
         _genericError = errorMessage;
       }
     }

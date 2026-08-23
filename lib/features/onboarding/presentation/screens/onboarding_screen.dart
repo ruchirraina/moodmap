@@ -6,57 +6,29 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../domain/models/onboarding_slide.dart';
+import '../../constants/onboarding_constants.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
-  static const int pageCount = 3;
-  static const double dotSize = 10.0;
-  static const double dotSpacing = 16.0;
-  static const double bottomPadding = 48.0;
-  static const double horizontalPadding = 24.0;
-  static const double buttonHeight = 56.0;
-  static const double buttonWidth = 240.0;
-  static const double animationHeight = 300.0;
-  static const double spacingLarge = 32.0;
-  static const double spacingSmall = 16.0;
-
-  static const double slide1Scale = 1.125;
-  static const double slide2Scale = 3.5;
-  static const double slide3Scale = 1.0;
-
-  static const String slide1Title = 'Welcome to MoodMap';
-  static const String slide1Body =
-      'A daily journal for however your day went. Morning thoughts, evening feelings — all welcome.';
-  static const String slide2Title = 'Attach a Song';
-  static const String slide2Body =
-      'Add a track to any entry — the soundtrack to your day, saved right alongside it.';
-  static const String slide3Title = 'AI Mood Mapping';
-  static const String slide3Body =
-      'Your entries become poetic summaries and bloom into a gradient — rose, marigold, wisteria.';
-
-  static const String signUpButtonText = 'Sign Up';
-  static const String existingAccountText = 'Already have an account?';
-  static const String signInButtonText = 'Sign In';
-
   static const List<OnboardingSlide> slides = [
     OnboardingSlide(
       animationPath: AppAssets.onboarding1,
-      title: slide1Title,
-      body: slide1Body,
-      scale: slide1Scale,
+      title: OnboardingConstants.slide1Title,
+      body: OnboardingConstants.slide1Body,
+      scale: OnboardingConstants.slide1Scale,
     ),
     OnboardingSlide(
       animationPath: AppAssets.onboarding2,
-      title: slide2Title,
-      body: slide2Body,
-      scale: slide2Scale,
+      title: OnboardingConstants.slide2Title,
+      body: OnboardingConstants.slide2Body,
+      scale: OnboardingConstants.slide2Scale,
     ),
     OnboardingSlide(
       animationPath: AppAssets.onboarding3,
-      title: slide3Title,
-      body: slide3Body,
-      scale: slide3Scale,
+      title: OnboardingConstants.slide3Title,
+      body: OnboardingConstants.slide3Body,
+      scale: OnboardingConstants.slide3Scale,
     ),
   ];
 
@@ -88,18 +60,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: OnboardingScreen.pageCount,
+                itemCount: OnboardingConstants.pageCount,
                 itemBuilder: (context, index) {
                   final slide = OnboardingScreen.slides[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: OnboardingScreen.horizontalPadding,
+                      horizontal: OnboardingConstants.horizontalPadding,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: OnboardingScreen.animationHeight,
+                          height: OnboardingConstants.animationHeight,
                           child: Transform.scale(
                             scale: slide.scale,
                             child: Lottie.asset(
@@ -109,7 +81,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: OnboardingScreen.spacingLarge),
+                        const SizedBox(
+                          height: OnboardingConstants.spacingLarge,
+                        ),
                         Text(
                           slide.title,
                           textAlign: TextAlign.center,
@@ -119,7 +93,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                         ),
-                        const SizedBox(height: OnboardingScreen.spacingSmall),
+                        const SizedBox(
+                          height: OnboardingConstants.spacingSmall,
+                        ),
                         Text(
                           slide.body,
                           textAlign: TextAlign.center,
@@ -131,29 +107,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                         ),
                         if (index == 2) ...[
-                          const SizedBox(height: OnboardingScreen.spacingLarge),
+                          const SizedBox(
+                            height: OnboardingConstants.spacingLarge,
+                          ),
                           SizedBox(
-                            width: OnboardingScreen.buttonWidth,
-                            height: OnboardingScreen.buttonHeight,
+                            width: OnboardingConstants.buttonWidth,
+                            height: OnboardingConstants.buttonHeight,
                             child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondary,
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondary,
+                              ),
                               onPressed: () {
                                 context.go(AppRoutes.signUpPath);
                               },
                               child: const Text(
-                                OnboardingScreen.signUpButtonText,
+                                OnboardingConstants.signUpButtonText,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: OnboardingConstants.buttonTextSize,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: OnboardingScreen.spacingSmall),
+                          const SizedBox(
+                            height: OnboardingConstants.spacingSmall,
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                OnboardingScreen.existingAccountText,
+                                OnboardingConstants.existingAccountText,
                                 style: TextStyle(
                                   color: Theme.of(context)
                                       .colorScheme
@@ -161,11 +149,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                               ),
                               TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                ),
                                 onPressed: () {
                                   context.go(AppRoutes.signInPath);
                                 },
                                 child: const Text(
-                                  OnboardingScreen.signInButtonText,
+                                  OnboardingConstants.signInButtonText,
                                 ),
                               ),
                             ],
@@ -179,17 +172,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.only(
-                left: OnboardingScreen.horizontalPadding,
-                right: OnboardingScreen.horizontalPadding,
-                bottom: OnboardingScreen.bottomPadding,
+                left: OnboardingConstants.horizontalPadding,
+                right: OnboardingConstants.horizontalPadding,
+                bottom: OnboardingConstants.bottomPadding,
               ),
               child: SmoothPageIndicator(
                 controller: _pageController,
-                count: OnboardingScreen.pageCount,
+                count: OnboardingConstants.pageCount,
                 effect: ExpandingDotsEffect(
-                  dotHeight: OnboardingScreen.dotSize,
-                  dotWidth: OnboardingScreen.dotSize,
-                  spacing: OnboardingScreen.dotSpacing,
+                  dotHeight: OnboardingConstants.dotSize,
+                  dotWidth: OnboardingConstants.dotSize,
+                  spacing: OnboardingConstants.dotSpacing,
                   activeDotColor: Theme.of(context).colorScheme.tertiary,
                   dotColor: Theme.of(context)
                       .colorScheme

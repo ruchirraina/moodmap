@@ -12,6 +12,9 @@ class AuthConstants {
   static const double borderWidth = 2.0;
   static const double suffixIconPadding = 8.0;
   static const double buttonTextSize = 16.0;
+  static const double disabledLogoOpacity = 0.5;
+  static const double enabledLogoOpacity = 1.0;
+  static const double disabledTextAlpha = 0.38;
 
   static const int navigateResetDelayMs = 500;
   static const int minimumLoadingMs = 500;
@@ -54,8 +57,33 @@ class AuthConstants {
   static const String invalidCredentialsError = 'Invalid email or password';
   static const String resetLinkSentMessage =
       'Reset link sent to email if linked to MoodMap';
+
   static const String googleWebClientId =
       '1046150734426-msi6448t9ikh6juoer0in48r5bv4sq6d.apps.googleusercontent.com';
   static const String googleIosClientId =
       '1046150734426-6f7dlhobjcdk74bmdsffivpfv6ag9fsl.apps.googleusercontent.com';
+
+  // Firebase Error Codes
+  static const String firebaseErrEmailInUse = 'email-already-in-use';
+  static const String firebaseErrUserNotFound = 'user-not-found';
+  static const String firebaseErrWrongPassword = 'wrong-password';
+  static const String firebaseErrInvalidCred = 'invalid-credential';
+  static const String firebaseErrInvalidEmail = 'invalid-email';
+  static const String firebaseErrWeakPassword = 'weak-password';
+  static const String firebaseErrUserDisabled = 'user-disabled';
+  static const String firebaseErrNetwork = 'network-request-failed';
+
+  // Domain Exception Messages
+  static const String excEmailInUse =
+      'This email is already in use by another account.';
+  static const String excInvalidCreds = 'Invalid email or password.';
+  static const String excInvalidEmail = 'Please enter a valid email address.';
+  static const String excWeakPassword = 'The password provided is too weak.';
+  static const String excUserDisabled = 'This account has been disabled.';
+  static const String excNetwork =
+      'Network error. Please check your internet connection.';
+  static const String excGeneric = 'An error occurred. Please try again.';
+  static const String excSignInAborted = 'Sign in aborted by user.';
+  static const String excGoogleSignInFailed =
+      'Google Sign In failed. Please try again.';
 }

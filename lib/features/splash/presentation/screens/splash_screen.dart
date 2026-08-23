@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../constants/splash_constants.dart';
+import '../../../auth/data/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -70,8 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
                   onLoaded: (composition) {
                     _introController.duration = composition.duration;
 
-                    final isLoggedIn =
-                        FirebaseAuth.instance.currentUser != null;
+                    final isLoggedIn = AuthService().currentUser != null;
 
                     if (isLoggedIn) {
                       Future.delayed(

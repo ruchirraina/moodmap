@@ -68,7 +68,7 @@ class ForgotPasswordProvider extends ChangeNotifier {
       _isResetMessageVisible = true;
     } catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage == 'Please enter a valid email address.') {
+      if (errorMessage == AuthConstants.excInvalidEmail) {
         _emailError = AuthConstants.invalidEmailFormatError;
       } else {
         _genericError = errorMessage;

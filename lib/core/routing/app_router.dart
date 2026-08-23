@@ -13,6 +13,10 @@ import '../../features/auth/presentation/providers/sign_up_provider.dart';
 import '../../features/auth/presentation/providers/sign_in_provider.dart';
 import '../../features/auth/presentation/providers/forgot_password_provider.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart';
+import '../../features/home/presentation/providers/home_provider.dart';
+import '../../features/journal/presentation/screens/composer_screen.dart';
+import '../../features/journal/presentation/providers/composer_provider.dart';
+import '../../features/journal/domain/models/journal_entry.dart';
 import '../constants/app_routes.dart';
 import '../constants/app_animations.dart';
 
@@ -38,8 +42,8 @@ class AppRouter {
 
   static void navigateSequentially(BuildContext context, String path) {
     isNavigatingSequentially = true;
-    context.go(path, extra: {'isSequential': true});
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    context.go(path, extra: {AppRoutes.argIsSequential: true});
+    Future.delayed(AppAnimations.sequentialDelayDuration, () {
       isNavigatingSequentially = false;
     });
   }
@@ -69,7 +73,7 @@ class AppRouter {
     return CustomTransitionPage(
       key: key,
       child: child,
-      transitionDuration: const Duration(milliseconds: 800),
+      transitionDuration: AppAnimations.sequentialTransitionDuration,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final bgOpacity =
             Tween<double>(
@@ -210,17 +214,22 @@ class AppRouter {
         name: AppRoutes.homeName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final isSequential = extra?['isSequential'] == true;
+          final isSequential = extra?[AppRoutes.argIsSequential] == true;
+
+          final child = ChangeNotifierProvider(
+            create: (_) => HomeProvider(),
+            child: const HomeScreen(),
+          );
 
           if (isSequential) {
             return _buildSequentialFadeTransitionPage(
               key: state.pageKey,
-              child: const HomeScreen(),
+              child: child,
             );
           }
           return _buildCrossFadeTransitionPage(
             key: state.pageKey,
-            child: const HomeScreen(),
+            child: child,
           );
         },
       ),
@@ -237,8 +246,8 @@ class AppRouter {
         name: AppRoutes.signUpName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final isPush = extra?['isPush'] == true;
-          final isSequential = extra?['isSequential'] == true;
+          final isPush = extra?[AppRoutes.argIsPush] == true;
+          final isSequential = extra?[AppRoutes.argIsSequential] == true;
 
           final child = ChangeNotifierProvider(
             create: (_) => SignUpProvider(),
@@ -248,7 +257,7 @@ class AppRouter {
           return CustomTransitionPage(
             key: state.pageKey,
             transitionDuration: isSequential
-                ? const Duration(milliseconds: 800)
+                ? AppAnimations.sequentialTransitionDuration
                 : AppAnimations.slideDuration,
             child: child,
             transitionsBuilder:
@@ -371,8 +380,8 @@ class AppRouter {
         name: AppRoutes.signInName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final isPush = extra?['isPush'] == true;
-          final isSequential = extra?['isSequential'] == true;
+          final isPush = extra?[AppRoutes.argIsPush] == true;
+          final isSequential = extra?[AppRoutes.argIsSequential] == true;
 
           final child = ChangeNotifierProvider(
             create: (_) => SignInProvider(),
@@ -382,7 +391,7 @@ class AppRouter {
           return CustomTransitionPage(
             key: state.pageKey,
             transitionDuration: isSequential
-                ? const Duration(milliseconds: 800)
+                ? AppAnimations.sequentialTransitionDuration
                 : AppAnimations.slideDuration,
             child: child,
             transitionsBuilder:
@@ -522,6 +531,28 @@ class AppRouter {
             child: ChangeNotifierProvider(
               create: (_) => ProfileProvider(),
               child: const ProfileScreen(),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.composerPath,
+        name: AppRoutes.composerName,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final entryDate =
+              extra?[AppRoutes.argEntryDate] as DateTime? ?? DateTime.now();
+          final existingEntry =
+              extra?[AppRoutes.argExistingEntry] as JournalEntry?;
+
+          return _buildScaleFadeTransitionPage(
+            key: state.pageKey,
+            child: ChangeNotifierProvider(
+              create: (_) => ComposerProvider(),
+              child: ComposerScreen(
+                entryDate: entryDate,
+                existingEntry: existingEntry,
+              ),
             ),
           );
         },

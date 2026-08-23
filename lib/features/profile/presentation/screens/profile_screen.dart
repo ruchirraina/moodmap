@@ -75,9 +75,13 @@ class ProfileScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                       onPressed: () {
+                        provider.reset();
                         showDialog(
                           context: context,
-                          barrierColor: Colors.black.withValues(alpha: 0.3),
+                          barrierDismissible: false,
+                          barrierColor: Colors.black.withValues(
+                            alpha: ProfileConstants.overlayAlpha,
+                          ),
                           builder: (_) => _EditNameDialog(provider: provider),
                         );
                       },
@@ -197,9 +201,13 @@ class ProfileScreen extends StatelessWidget {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 onTap: () {
+                  provider.reset();
                   showDialog(
                     context: context,
-                    barrierColor: Colors.black.withValues(alpha: 0.3),
+                    barrierDismissible: false,
+                    barrierColor: Colors.black.withValues(
+                      alpha: ProfileConstants.overlayAlpha,
+                    ),
                     builder: (_) => _DeleteAccountDialog(provider: provider),
                   );
                 },
@@ -348,7 +356,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
     final activeBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(ProfileConstants.borderRadius),
       borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.secondary,
+        color: Theme.of(context).colorScheme.primary,
         width: ProfileConstants.borderWidth,
       ),
     );
@@ -435,13 +443,22 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: provider.isLoading
+                                      ? Theme.of(context).colorScheme.tertiary
+                                            .withValues(
+                                              alpha: ProfileConstants
+                                                  .disabledBorderAlpha,
+                                            )
+                                      : Theme.of(context).colorScheme.tertiary,
                                 ),
-                                foregroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface,
+                                foregroundColor: provider.isLoading
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.tertiary.withValues(
+                                        alpha:
+                                            ProfileConstants.disabledTextAlpha,
+                                      )
+                                    : Theme.of(context).colorScheme.tertiary,
                               ),
                               onPressed: provider.isLoading
                                   ? null
@@ -461,6 +478,14 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                           child: SizedBox(
                             height: ProfileConstants.buttonHeight,
                             child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondary,
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondary,
+                              ),
                               onPressed: provider.isLoading
                                   ? null
                                   : () async {
@@ -479,7 +504,11 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                                   ? SpinKitThreeBounce(
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .onPrimary,
+                                          .onSurface
+                                          .withValues(
+                                            alpha: ProfileConstants
+                                                .disabledTextAlpha,
+                                          ),
                                       size: ProfileConstants.loaderSize,
                                     )
                                   : const Text(
@@ -558,13 +587,22 @@ class _DeleteAccountDialog extends StatelessWidget {
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: currentProvider.isLoading
+                                      ? Theme.of(context).colorScheme.tertiary
+                                            .withValues(
+                                              alpha: ProfileConstants
+                                                  .disabledBorderAlpha,
+                                            )
+                                      : Theme.of(context).colorScheme.tertiary,
                                 ),
-                                foregroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface,
+                                foregroundColor: currentProvider.isLoading
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.tertiary.withValues(
+                                        alpha:
+                                            ProfileConstants.disabledTextAlpha,
+                                      )
+                                    : Theme.of(context).colorScheme.tertiary,
                               ),
                               onPressed: currentProvider.isLoading
                                   ? null
@@ -603,11 +641,13 @@ class _DeleteAccountDialog extends StatelessWidget {
                                     },
                               child: currentProvider.isLoading
                                   ? SpinKitThreeBounce(
-                                      color:
-                                          Theme.of(context).brightness ==
-                                              Brightness.light
-                                          ? Colors.black
-                                          : Colors.white,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(
+                                            alpha: ProfileConstants
+                                                .disabledTextAlpha,
+                                          ),
                                       size: ProfileConstants.loaderSize,
                                     )
                                   : const Text(

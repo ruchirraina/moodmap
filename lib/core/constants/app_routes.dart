@@ -13,4 +13,11 @@ class AppRoutes {
   static const String homeName = 'home';
   static const String profilePath = '/profile';
   static const String profileName = 'profile';
+  static const String composerPath = '/composer';
+  static const String composerName = 'composer';
+
+  static const String argIsSequential = 'isSequential';
+  static const String argIsPush = 'isPush';
+  static const String argEntryDate = 'entryDate';
+  static const String argExistingEntry = 'existingEntry';
 }

@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/app_fonts.dart';
 
 class AppTheme {
   static TextTheme _buildTextTheme(Brightness brightness) {
     final baseTheme = ThemeData(brightness: brightness, useMaterial3: true);
-    final baseTextTheme = baseTheme.textTheme.apply(fontFamily: 'Lato');
+    final baseTextTheme = baseTheme.textTheme.apply(
+      fontFamily: AppFonts.primary,
+    );
 
     return baseTextTheme.copyWith(
       displayLarge: baseTextTheme.displayLarge?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       displayMedium: baseTextTheme.displayMedium?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       displaySmall: baseTextTheme.displaySmall?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       headlineLarge: baseTextTheme.headlineLarge?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
-        fontFamily: 'Playfair Display',
+        fontFamily: AppFonts.secondary,
       ),
     );
   }
@@ -73,6 +76,15 @@ class AppTheme {
       shadow: AppColors.shadow,
       scrim: AppColors.scrim,
     ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.coreWisteria,
+      foregroundColor: AppColors.lightOnTertiary,
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: AppColors.corePetal,
+      selectionColor: AppColors.petalLight.withValues(alpha: 0.5),
+      selectionHandleColor: AppColors.corePetal,
+    ),
   );
 
   static ThemeData get darkTheme => ThemeData(
@@ -115,6 +127,15 @@ class AppTheme {
       inversePrimary: AppColors.mulberryDeep,
       shadow: AppColors.shadow,
       scrim: AppColors.scrim,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.coreWisteria,
+      foregroundColor: AppColors.darkOnTertiary,
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: AppColors.corePetal,
+      selectionColor: AppColors.petalDeep.withValues(alpha: 0.5),
+      selectionHandleColor: AppColors.corePetal,
     ),
   );
 }

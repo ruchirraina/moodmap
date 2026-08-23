@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../constants/profile_constants.dart';
+
 class ProfileService {
   final FirebaseAuth _firebaseAuth;
 
@@ -21,10 +23,10 @@ class ProfileService {
       try {
         await user.delete();
       } on FirebaseAuthException catch (e) {
-        if (e.code == 'requires-recent-login') {
-          throw 'requires-recent-login';
+        if (e.code == ProfileConstants.firebaseErrRequiresRecentLogin) {
+          throw ProfileConstants.excRequiresRecentLogin;
         }
-        throw e.message ?? 'Failed to delete account.';
+        throw e.message ?? ProfileConstants.genericError;
       }
     }
   }

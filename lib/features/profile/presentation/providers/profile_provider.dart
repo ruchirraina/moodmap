@@ -85,19 +85,21 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    bool isSuccess = false;
     try {
       await _profileService.updateDisplayName(newName.trim());
       await _profileService.currentUser?.reload();
       _cachedName = newName.trim();
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      isSuccess = true;
     } catch (e) {
       _error = ProfileConstants.genericError;
-      _isLoading = false;
-      notifyListeners();
-      return false;
     }
+
+    if (!isSuccess) {
+      _isLoading = false;
+    }
+    notifyListeners();
+    return isSuccess;
   }
 
   Future<void> signOut() async {
@@ -113,21 +115,23 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    bool isSuccess = false;
     try {
       await _profileService.deleteAccount();
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      isSuccess = true;
     } catch (e) {
-      if (e.toString() == 'requires-recent-login') {
+      if (e.toString() == ProfileConstants.excRequiresRecentLogin) {
         _error = ProfileConstants.reauthRequiredError;
       } else {
         _error = ProfileConstants.genericError;
       }
+    }
+
+    if (!isSuccess) {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
+    return isSuccess;
   }
 
   void clearError() {
@@ -135,5 +139,13 @@ class ProfileProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
     }
+  }
+
+  void reset() {
+    _isLoading = false;
+    _isNameFocused = false;
+    _error = null;
+    _nameError = null;
+    notifyListeners();
   }
 }

@@ -84,7 +84,7 @@ class _SignInScreenState extends State<SignInScreen> {
     final activeBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
       borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.secondary,
+        color: Theme.of(context).colorScheme.primary,
         width: AuthConstants.borderWidth,
       ),
     );
@@ -210,7 +210,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             style: TextButton.styleFrom(
                               foregroundColor: Theme.of(context)
                                   .colorScheme
-                                  .tertiary,
+                                  .primary,
                             ),
                             onPressed: isAnyLoading
                                 ? null
@@ -240,6 +240,14 @@ class _SignInScreenState extends State<SignInScreen> {
                         SizedBox(
                           height: AuthConstants.buttonHeight,
                           child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .secondary,
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondary,
+                            ),
                             onPressed: isAnyLoading
                                 ? null
                                 : () async {
@@ -260,11 +268,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                   },
                             child: provider.isEmailLoading
                                 ? SpinKitThreeBounce(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                            Brightness.light
-                                        ? Colors.black
-                                        : Colors.white,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(
+                                          alpha:
+                                              AuthConstants.disabledTextAlpha,
+                                        ),
                                     size: AuthConstants.iconSizeSmall,
                                   )
                                 : const Text(
@@ -290,7 +300,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               style: TextButton.styleFrom(
                                 foregroundColor: Theme.of(context)
                                     .colorScheme
-                                    .tertiary,
+                                    .primary,
                               ),
                               onPressed: isAnyLoading
                                   ? null
@@ -301,7 +311,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                         } else {
                                           context.push(
                                             AppRoutes.signUpPath,
-                                            extra: {'isPush': true},
+                                            extra: {AppRoutes.argIsPush: true},
                                           );
                                         }
                                       });
@@ -382,6 +392,9 @@ class _SignInScreenState extends State<SignInScreen> {
                               foregroundColor: Theme.of(context)
                                   .colorScheme
                                   .onSurface,
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
                             ),
                             onPressed: isAnyLoading
                                 ? null
@@ -404,14 +417,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ? SpinKitThreeBounce(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSurface,
+                                        .onSurface
+                                        .withValues(
+                                          alpha:
+                                              AuthConstants.disabledTextAlpha,
+                                        ),
                                     size: AuthConstants.iconSizeSmall,
                                   )
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Opacity(
-                                        opacity: isAnyLoading ? 0.5 : 1.0,
+                                        opacity: isAnyLoading
+                                            ? AuthConstants.disabledLogoOpacity
+                                            : AuthConstants.enabledLogoOpacity,
                                         child: Image.asset(
                                           AppAssets.googleLogo,
                                           height: AuthConstants.iconSizeSmall,

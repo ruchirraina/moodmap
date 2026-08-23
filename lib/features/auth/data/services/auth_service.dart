@@ -49,7 +49,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw 'An unexpected error occurred. Please try again.';
+      throw AuthConstants.excGeneric;
     }
   }
 
@@ -65,7 +65,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw 'An unexpected error occurred. Please try again.';
+      throw AuthConstants.excGeneric;
     }
   }
 
@@ -86,14 +86,22 @@ class AuthService {
       );
 
       await _firebaseAuth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
     } catch (e) {
       final errorString = e.toString().toLowerCase();
       if (errorString.contains('canceled') ||
           errorString.contains('aborted') ||
           errorString.contains('sign_in_canceled')) {
-        throw 'Sign in aborted by user.';
+        throw AuthConstants.excSignInAborted;
       }
-      throw 'Google Sign In failed: $errorString';
+      if (errorString.contains('network') ||
+          errorString.contains('host') ||
+          errorString.contains('connection') ||
+          errorString.contains('offline')) {
+        throw AuthConstants.excNetwork;
+      }
+      throw AuthConstants.excGoogleSignInFailed;
     }
   }
 
@@ -103,7 +111,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw 'An unexpected error occurred. Please try again.';
+      throw AuthConstants.excGeneric;
     }
   }
 
@@ -113,22 +121,22 @@ class AuthService {
 
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
-      case 'email-already-in-use':
-        return 'This email is already in use by another account.';
-      case 'user-not-found':
-      case 'wrong-password':
-      case 'invalid-credential':
-        return 'Invalid email or password.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
-      case 'weak-password':
-        return 'The password provided is too weak.';
-      case 'user-disabled':
-        return 'This account has been disabled.';
-      case 'network-request-failed':
-        return 'Network error. Please check your internet connection.';
+      case AuthConstants.firebaseErrEmailInUse:
+        return AuthConstants.excEmailInUse;
+      case AuthConstants.firebaseErrUserNotFound:
+      case AuthConstants.firebaseErrWrongPassword:
+      case AuthConstants.firebaseErrInvalidCred:
+        return AuthConstants.excInvalidCreds;
+      case AuthConstants.firebaseErrInvalidEmail:
+        return AuthConstants.excInvalidEmail;
+      case AuthConstants.firebaseErrWeakPassword:
+        return AuthConstants.excWeakPassword;
+      case AuthConstants.firebaseErrUserDisabled:
+        return AuthConstants.excUserDisabled;
+      case AuthConstants.firebaseErrNetwork:
+        return AuthConstants.excNetwork;
       default:
-        return 'An error occurred. Please try again.';
+        return AuthConstants.excGeneric;
     }
   }
 }

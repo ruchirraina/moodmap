@@ -14,6 +14,10 @@ class ProfileConstants {
   static const double loaderSize = 20.0;
   static const double dialogBlurSigma = 8.0;
 
+  static const double overlayAlpha = 0.3;
+  static const double disabledBorderAlpha = 0.12;
+  static const double disabledTextAlpha = 0.38;
+
   static const int nameMaxLength = 50;
 
   static const String fallbackAvatarText = '?';
@@ -42,4 +46,7 @@ class ProfileConstants {
       'Please sign out and sign in again to delete your account.';
   static const String genericError =
       'An unexpected error occurred. Please try again.';
+
+  static const String firebaseErrRequiresRecentLogin = 'requires-recent-login';
+  static const String excRequiresRecentLogin = 'requires-recent-login';
 }
