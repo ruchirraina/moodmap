@@ -17,12 +17,13 @@ class JournalService {
     return _firestore
         .collection(JournalConstants.collectionName)
         .where(JournalConstants.fieldUserId, isEqualTo: userId)
-        .orderBy(JournalConstants.fieldDate, descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
+          final entries = snapshot.docs
               .map((doc) => JournalEntry.fromFirestore(doc))
               .toList();
+          entries.sort((a, b) => b.date.compareTo(a.date));
+          return entries;
         });
   }
 

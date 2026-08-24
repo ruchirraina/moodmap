@@ -18,7 +18,6 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
   final prefs = await SharedPreferences.getInstance();
   final savedTheme = prefs.getString(ThemeProvider.themeKey);
   ThemeMode initialMode = ThemeMode.system;

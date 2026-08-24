@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/models/journal_entry.dart';
 import '../../data/services/journal_service.dart';
 import '../../constants/composer_constants.dart';
+import '../../constants/journal_constants.dart';
 import '../../../auth/data/services/auth_service.dart';
 
 class ComposerProvider extends ChangeNotifier {
@@ -79,7 +80,20 @@ class ComposerProvider extends ChangeNotifier {
 
     if (finalTitle == null && finalBody.isEmpty && !hasMusic) {
       if (existingEntry != null) {
-        _service.deleteEntry(existingEntry.id).catchError((_) {});
+        _isLoading = true;
+        notifyListeners();
+
+        try {
+          await _service.deleteEntry(existingEntry.id);
+        } catch (e) {
+          _error = JournalConstants.errorGeneric;
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+
+        _isLoading = false;
+        notifyListeners();
       }
       return true;
     }
@@ -116,8 +130,17 @@ class ComposerProvider extends ChangeNotifier {
     await Future.delayed(
       const Duration(milliseconds: ComposerConstants.saveDelayMs),
     );
-    _service.saveEntry(entry).catchError((_) {});
 
-    return true;
+    try {
+      await _service.saveEntry(entry);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = JournalConstants.errorGeneric;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }
