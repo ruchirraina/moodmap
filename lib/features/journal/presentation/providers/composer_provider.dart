@@ -52,14 +52,14 @@ class ComposerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> saveEntry({
+  Future<JournalEntry?> saveEntry({
     required DateTime sessionStart,
     required DateTime entryDate,
     required String title,
     required String body,
     JournalEntry? existingEntry,
   }) async {
-    if (hasValidationErrors) return false;
+    if (hasValidationErrors) return null;
 
     final now = DateTime.now();
     if (now.day != sessionStart.day ||
@@ -67,7 +67,7 @@ class ComposerProvider extends ChangeNotifier {
         now.year != sessionStart.year) {
       _error = ComposerConstants.pastMidnightError;
       notifyListeners();
-      return false;
+      return null;
     }
 
     final finalTitle = title.trim().isEmpty ? null : title.trim();
@@ -87,15 +87,12 @@ class ComposerProvider extends ChangeNotifier {
           await _service.deleteEntry(existingEntry.id);
         } catch (e) {
           _error = JournalConstants.errorGeneric;
-          _isLoading = false;
-          notifyListeners();
-          return false;
         }
 
         _isLoading = false;
         notifyListeners();
       }
-      return true;
+      return null;
     }
 
     _isLoading = true;
@@ -106,7 +103,7 @@ class ComposerProvider extends ChangeNotifier {
     if (user == null) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
 
     final entryId = existingEntry?.id ?? _service.generateId();
@@ -135,12 +132,12 @@ class ComposerProvider extends ChangeNotifier {
       await _service.saveEntry(entry);
       _isLoading = false;
       notifyListeners();
-      return true;
+      return entry;
     } catch (e) {
       _error = JournalConstants.errorGeneric;
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
   }
 }

@@ -15,9 +15,12 @@ class AppRoutes {
   static const String profileName = 'profile';
   static const String composerPath = '/composer';
   static const String composerName = 'composer';
+  static const String expandedEntryPath = '/expanded-entry';
+  static const String expandedEntryName = 'expanded_entry';
 
   static const String argIsSequential = 'isSequential';
   static const String argIsPush = 'isPush';
   static const String argEntryDate = 'entryDate';
   static const String argExistingEntry = 'existingEntry';
+  static const String argIsFadeTransition = 'isFadeTransition';
 }

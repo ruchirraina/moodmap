@@ -17,6 +17,7 @@ import '../../features/home/presentation/providers/home_provider.dart';
 import '../../features/journal/presentation/screens/composer_screen.dart';
 import '../../features/journal/presentation/providers/composer_provider.dart';
 import '../../features/journal/domain/models/journal_entry.dart';
+import '../../features/journal/presentation/screens/expanded_entry_screen.dart';
 import '../constants/app_routes.dart';
 import '../constants/app_animations.dart';
 
@@ -33,18 +34,63 @@ class _ConditionalOffsetTween extends Tween<Offset> {
   }
 }
 
+class _ConditionalScaleTween extends Tween<double> {
+  _ConditionalScaleTween({super.begin, super.end});
+
+  @override
+  double lerp(double t) {
+    if (AppRouter.isNavigatingWithFade) {
+      return AppAnimations.scaleEnd;
+    }
+    if (t <= AppRouter.transitionHalf) return AppAnimations.scaleBegin;
+    final mappedT =
+        (t - AppRouter.transitionHalf) /
+        (AppRouter.transitionFull - AppRouter.transitionHalf);
+    return super.lerp(Curves.easeOutCubic.transform(mappedT));
+  }
+}
+
+class _ConditionalOpacityTween extends Tween<double> {
+  _ConditionalOpacityTween({super.begin, super.end});
+
+  @override
+  double lerp(double t) {
+    if (AppRouter.isNavigatingWithFade) {
+      return super.lerp(Curves.easeInOut.transform(t));
+    }
+    if (t <= AppRouter.transitionHalf) return AppAnimations.opacityBegin;
+    final mappedT =
+        (t - AppRouter.transitionHalf) /
+        (AppRouter.transitionFull - AppRouter.transitionHalf);
+    return super.lerp(Curves.easeIn.transform(mappedT));
+  }
+}
+
 class AppRouter {
   static const double transitionHalf = 0.5;
   static const double transitionFull = 1.0;
 
   static bool isNavigatingToForgotPassword = false;
   static bool isNavigatingSequentially = false;
+  static bool isNavigatingWithFade = false;
 
   static void navigateSequentially(BuildContext context, String path) {
     isNavigatingSequentially = true;
     context.go(path, extra: {AppRoutes.argIsSequential: true});
     Future.delayed(AppAnimations.sequentialDelayDuration, () {
       isNavigatingSequentially = false;
+    });
+  }
+
+  static void navigateWithFade(
+    BuildContext context,
+    String path, {
+    Object? extra,
+  }) {
+    isNavigatingWithFade = true;
+    context.pushReplacement(path, extra: extra);
+    Future.delayed(AppAnimations.fadeDuration, () {
+      isNavigatingWithFade = false;
     });
   }
 
@@ -121,35 +167,15 @@ class AppRouter {
       child: child,
       transitionDuration: AppAnimations.slideDuration,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final scaleIn =
-            Tween<double>(
-              begin: AppAnimations.scaleBegin,
-              end: AppAnimations.scaleEnd,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: const Interval(
-                  transitionHalf,
-                  transitionFull,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
-            );
+        final scaleIn = _ConditionalScaleTween(
+          begin: AppAnimations.scaleBegin,
+          end: AppAnimations.scaleEnd,
+        ).animate(animation);
 
-        final fadeIn =
-            Tween<double>(
-              begin: AppAnimations.opacityBegin,
-              end: AppAnimations.opacityEnd,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: const Interval(
-                  transitionHalf,
-                  transitionFull,
-                  curve: Curves.easeIn,
-                ),
-              ),
-            );
+        final fadeIn = _ConditionalOpacityTween(
+          begin: AppAnimations.opacityBegin,
+          end: AppAnimations.opacityEnd,
+        ).animate(animation);
 
         return FadeTransition(
           opacity: fadeIn,
@@ -193,6 +219,23 @@ class AppRouter {
         return SlideTransition(
           position: slideOut,
           child: SlideTransition(position: slideIn, child: child),
+        );
+      },
+    );
+  }
+
+  static CustomTransitionPage _buildPureFadeTransitionPage({
+    required Widget child,
+    required LocalKey key,
+  }) {
+    return CustomTransitionPage(
+      key: key,
+      child: child,
+      transitionDuration: AppAnimations.fadeDuration,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+          child: child,
         );
       },
     );
@@ -544,16 +587,48 @@ class AppRouter {
               extra?[AppRoutes.argEntryDate] as DateTime? ?? DateTime.now();
           final existingEntry =
               extra?[AppRoutes.argExistingEntry] as JournalEntry?;
+          final isFade = extra?[AppRoutes.argIsFadeTransition] == true;
 
+          final child = ChangeNotifierProvider(
+            create: (_) => ComposerProvider(),
+            child: ComposerScreen(
+              entryDate: entryDate,
+              existingEntry: existingEntry,
+            ),
+          );
+
+          if (isFade) {
+            return _buildPureFadeTransitionPage(
+              key: state.pageKey,
+              child: child,
+            );
+          }
           return _buildScaleFadeTransitionPage(
             key: state.pageKey,
-            child: ChangeNotifierProvider(
-              create: (_) => ComposerProvider(),
-              child: ComposerScreen(
-                entryDate: entryDate,
-                existingEntry: existingEntry,
-              ),
-            ),
+            child: child,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.expandedEntryPath,
+        name: AppRoutes.expandedEntryName,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final existingEntry =
+              extra?[AppRoutes.argExistingEntry] as JournalEntry;
+          final isFade = extra?[AppRoutes.argIsFadeTransition] == true;
+
+          final child = ExpandedEntryScreen(entry: existingEntry);
+
+          if (isFade) {
+            return _buildPureFadeTransitionPage(
+              key: state.pageKey,
+              child: child,
+            );
+          }
+          return _buildScaleFadeTransitionPage(
+            key: state.pageKey,
+            child: child,
           );
         },
       ),

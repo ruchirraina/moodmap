@@ -14,4 +14,8 @@ class JournalConstants {
   static const String fieldUpdatedAt = 'updatedAt';
 
   static const String errorGeneric = 'An unexpected error occurred.';
+
+  static const double horizontalPadding = 24.0;
+  static const double spacingLarge = 32.0;
+  static const double bodyLineHeight = 1.6;
 }

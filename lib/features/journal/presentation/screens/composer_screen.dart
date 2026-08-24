@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/date_constants.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../domain/models/journal_entry.dart';
 import '../providers/composer_provider.dart';
 import '../../constants/composer_constants.dart';
@@ -69,19 +71,31 @@ class _ComposerScreenState extends State<ComposerScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(
             left: ComposerConstants.horizontalPadding,
-            top: ComposerConstants.appBarButtonVertical,
-            bottom: ComposerConstants.appBarButtonVertical,
           ),
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Theme.of(context).colorScheme.tertiary),
-              foregroundColor: Theme.of(context).colorScheme.tertiary,
-              padding: EdgeInsets.zero,
-            ),
-            onPressed: provider.isLoading ? null : () => context.pop(),
-            child: const Text(
-              ComposerConstants.cancelText,
-              style: TextStyle(fontWeight: FontWeight.bold),
+          child: Center(
+            child: SizedBox(
+              width: ComposerConstants.circleButtonSize,
+              height: ComposerConstants.circleButtonSize,
+              child: IconButton.outlined(
+                icon: const Icon(Icons.close_rounded),
+                iconSize: ComposerConstants.iconSizeMedium,
+                style: IconButton.styleFrom(
+                  side: BorderSide(
+                    color: provider.isLoading
+                        ? Theme.of(context).colorScheme.tertiary.withValues(
+                            alpha: ComposerConstants.disabledBorderAlpha,
+                          )
+                        : Theme.of(context).colorScheme.tertiary,
+                    width: ComposerConstants.buttonBorderWidth,
+                  ),
+                  foregroundColor: provider.isLoading
+                      ? Theme.of(context).colorScheme.tertiary.withValues(
+                          alpha: ComposerConstants.disabledTextAlpha,
+                        )
+                      : Theme.of(context).colorScheme.tertiary,
+                ),
+                onPressed: provider.isLoading ? null : () => context.pop(),
+              ),
             ),
           ),
         ),
@@ -89,42 +103,58 @@ class _ComposerScreenState extends State<ComposerScreen> {
           Padding(
             padding: const EdgeInsets.only(
               right: ComposerConstants.horizontalPadding,
-              top: ComposerConstants.appBarButtonVertical,
-              bottom: ComposerConstants.appBarButtonVertical,
             ),
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+            child: Center(
+              child: SizedBox(
+                width: ComposerConstants.circleButtonSize,
+                height: ComposerConstants.circleButtonSize,
+                child: IconButton.filled(
+                  icon: provider.isLoading
+                      ? SpinKitThreeBounce(
+                          color: Theme.of(context).colorScheme.onSurface
+                              .withValues(
+                                alpha: ComposerConstants.disabledTextAlpha,
+                              ),
+                          size: ComposerConstants.loaderSize,
+                        )
+                      : const Icon(Icons.check_rounded),
+                  iconSize: ComposerConstants.iconSizeMedium,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                  onPressed:
+                      (provider.isLoading || provider.hasValidationErrors)
+                      ? null
+                      : () async {
+                          FocusScope.of(context).unfocus();
+                          final savedEntry = await context
+                              .read<ComposerProvider>()
+                              .saveEntry(
+                                sessionStart: _sessionStart,
+                                entryDate: widget.entryDate,
+                                title: _titleController.text,
+                                body: _bodyController.text,
+                                existingEntry: widget.existingEntry,
+                              );
+
+                          if (context.mounted) {
+                            if (savedEntry != null) {
+                              AppRouter.navigateWithFade(
+                                context,
+                                AppRoutes.expandedEntryPath,
+                                extra: {
+                                  AppRoutes.argExistingEntry: savedEntry,
+                                  AppRoutes.argIsFadeTransition: true,
+                                },
+                              );
+                            } else if (provider.error == null) {
+                              context.pop();
+                            }
+                          }
+                        },
+                ),
               ),
-              onPressed: (provider.isLoading || provider.hasValidationErrors)
-                  ? null
-                  : () async {
-                      FocusScope.of(context).unfocus();
-                      final success = await context
-                          .read<ComposerProvider>()
-                          .saveEntry(
-                            sessionStart: _sessionStart,
-                            entryDate: widget.entryDate,
-                            title: _titleController.text,
-                            body: _bodyController.text,
-                            existingEntry: widget.existingEntry,
-                          );
-                      if (success && context.mounted) {
-                        context.pop();
-                      }
-                    },
-              child: provider.isLoading
-                  ? SpinKitThreeBounce(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: ComposerConstants.disabledTextAlpha,
-                      ),
-                      size: ComposerConstants.loaderSize,
-                    )
-                  : const Text(
-                      ComposerConstants.doneText,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
             ),
           ),
         ],
@@ -153,106 +183,103 @@ class _ComposerScreenState extends State<ComposerScreen> {
                     )
                   : const SizedBox.shrink(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ComposerConstants.horizontalPadding,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: _titleController,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: _fallbackTitle,
-                      hintStyle: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withValues(alpha: ComposerConstants.alphaHalf),
-                            fontWeight: FontWeight.bold,
-                          ),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (text) {
-                      context.read<ComposerProvider>().onTitleChanged(text);
-                    },
-                  ),
-                  AnimatedSize(
-                    duration: const Duration(
-                      milliseconds: ComposerConstants.animationDurationMs,
-                    ),
-                    child: provider.titleError != null
-                        ? Padding(
-                            padding: const EdgeInsets.only(
-                              top: ComposerConstants.errorTopPadding,
-                            ),
-                            child: Text(
-                              provider.titleError!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontSize: ComposerConstants.errorFontSize,
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ComposerConstants.horizontalPadding,
-              ),
-              child: Divider(
-                color: Theme.of(context).colorScheme.outlineVariant
-                    .withValues(alpha: ComposerConstants.alphaHalf),
-              ),
-            ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ComposerConstants.horizontalPadding,
+              child: Container(
+                margin: const EdgeInsets.all(
+                  ComposerConstants.horizontalPadding,
                 ),
-                child: TextField(
-                  controller: _bodyController,
-                  maxLines: null,
-                  expands: true,
-                  maxLength: ComposerConstants.bodyCharacterLimit,
-                  maxLengthEnforcement: MaxLengthEnforcement.none,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  decoration: const InputDecoration(
-                    hintText: ComposerConstants.bodyHint,
-                    border: InputBorder.none,
-                    counterText: '',
+                padding: const EdgeInsets.all(ComposerConstants.cardPadding),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(
+                    ComposerConstants.cardRadius,
                   ),
-                  onChanged: (text) {
-                    context.read<ComposerProvider>().updateCharacterCount(
-                      text.length,
-                    );
-                  },
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(
-                ComposerConstants.horizontalPadding,
-              ),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  '${provider.currentLength} / ${ComposerConstants.bodyCharacterLimit}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color:
-                        provider.currentLength >
-                            ComposerConstants.bodyCharacterLimit
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _titleController,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                      decoration: InputDecoration(
+                        hintText: _fallbackTitle,
+                        hintStyle: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withValues(
+                                    alpha: ComposerConstants.alphaHalf,
+                                  ),
+                              fontWeight: FontWeight.bold,
+                            ),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (text) {
+                        context.read<ComposerProvider>().onTitleChanged(text);
+                      },
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(
+                        milliseconds: ComposerConstants.animationDurationMs,
+                      ),
+                      child: provider.titleError != null
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                top: ComposerConstants.errorTopPadding,
+                              ),
+                              child: Text(
+                                provider.titleError!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontSize: ComposerConstants.errorFontSize,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant
+                          .withValues(alpha: ComposerConstants.alphaHalf),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _bodyController,
+                        maxLines: null,
+                        expands: true,
+                        maxLength: ComposerConstants.bodyCharacterLimit,
+                        maxLengthEnforcement: MaxLengthEnforcement.none,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        decoration: const InputDecoration(
+                          hintText: ComposerConstants.bodyHint,
+                          border: InputBorder.none,
+                          counterText: '',
+                        ),
+                        onChanged: (text) {
+                          context.read<ComposerProvider>().updateCharacterCount(
+                            text.length,
+                          );
+                        },
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '${provider.currentLength} / ${ComposerConstants.bodyCharacterLimit}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color:
+                              provider.currentLength >
+                                  ComposerConstants.bodyCharacterLimit
+                              ? Theme.of(context).colorScheme.error
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

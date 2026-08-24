@@ -416,7 +416,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     onExpand: () {
-                      // Open expanded read-only view
+                      context.push(
+                        AppRoutes.expandedEntryPath,
+                        extra: {AppRoutes.argExistingEntry: entry},
+                      );
                     },
                   ),
                 );
