@@ -26,6 +26,9 @@ class JournalProvider extends ChangeNotifier {
         _loadEntries(user.uid);
       } else {
         _entries = [];
+        _selectedDate = DateTime.now();
+        _isInitialized = false;
+        _isLoading = true;
         _entriesSubscription?.cancel();
         notifyListeners();
       }

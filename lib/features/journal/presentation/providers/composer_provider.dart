@@ -84,7 +84,7 @@ class ComposerProvider extends ChangeNotifier {
         notifyListeners();
 
         try {
-          await _service.deleteEntry(existingEntry.id);
+          _service.deleteEntry(existingEntry.id);
         } catch (e) {
           _error = JournalConstants.errorGeneric;
         }
@@ -129,7 +129,7 @@ class ComposerProvider extends ChangeNotifier {
     );
 
     try {
-      await _service.saveEntry(entry);
+      _service.saveEntry(entry);
       _isLoading = false;
       notifyListeners();
       return entry;

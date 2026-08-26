@@ -21,18 +21,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late PageController _pageController;
+  PageController? _pageController;
   bool _isAudioMuted = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
+  double _contentOpacity = 1.0;
+  bool _isTransitioning = false;
+  final Key _pageViewKey = const ValueKey('initial_page_view');
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _pageController?.dispose();
     super.dispose();
   }
 
@@ -53,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   DateTime _normalizeDate(DateTime date) =>
-      DateTime(date.year, date.month, date.day);
+      DateTime.utc(date.year, date.month, date.day);
 
   List<DateTime> _getNavigableDates(JournalProvider provider) {
     final dates = provider.entries
@@ -66,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
       dates.add(today);
     }
 
-    dates.sort((a, b) => b.compareTo(a));
+    dates.sort((a, b) => a.compareTo(b));
     return dates;
   }
 
@@ -220,20 +217,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final navigableDates = _getNavigableDates(provider);
     final selectedDate = _normalizeDate(provider.selectedDate);
-
     final targetPageIndex = navigableDates.indexOf(selectedDate);
-    if (_pageController.hasClients && targetPageIndex != -1) {
-      final currentPage =
-          _pageController.page?.round() ?? _pageController.initialPage;
-      if (currentPage != targetPageIndex) {
-        _pageController.animateToPage(
-          targetPageIndex,
-          duration: const Duration(
-            milliseconds: HomeConstants.pageAnimationDurationMs,
-          ),
-          curve: Curves.easeInOut,
-        );
-      }
+
+    if (provider.isInitialized && _pageController == null) {
+      _pageController = PageController(
+        initialPage: targetPageIndex != -1 ? targetPageIndex : 0,
+      );
     }
 
     final firstName = _getFirstName(homeProvider.displayName);
@@ -301,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: TableCalendar(
               firstDay: navigableDates.isNotEmpty
-                  ? navigableDates.last
+                  ? navigableDates.first
                   : selectedDate,
               lastDay: _normalizeDate(DateTime.now()),
               focusedDay: selectedDate,
@@ -330,101 +319,169 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Theme.of(context).colorScheme.onTertiary,
                   fontWeight: FontWeight.bold,
                 ),
+                defaultTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                weekendTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                disabledTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant
+                      .withValues(alpha: HomeConstants.disabledTextAlpha),
+                ),
+                outsideTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant
+                      .withValues(alpha: HomeConstants.disabledTextAlpha),
+                ),
               ),
               enabledDayPredicate: (day) {
                 return navigableDates.contains(_normalizeDate(day));
               },
               onDaySelected: (selectedDay, focusedDay) {
+                if (_isTransitioning) return;
+
                 final normalized = _normalizeDate(selectedDay);
                 if (navigableDates.contains(normalized)) {
-                  provider.setSelectedDate(normalized);
+                  final targetIndex = navigableDates.indexOf(normalized);
+                  final currentIndex = _pageController?.hasClients == true
+                      ? _pageController!.page!.round()
+                      : (_pageController?.initialPage ?? 0);
+                  final delta = (targetIndex - currentIndex).abs();
+
+                  if (delta > 1) {
+                    setState(() {
+                      _isTransitioning = true;
+                      _contentOpacity = 0.0;
+                    });
+
+                    Future.delayed(
+                      const Duration(
+                        milliseconds: HomeConstants.pageAnimationDurationMs,
+                      ),
+                      () {
+                        if (mounted) {
+                          _pageController?.jumpToPage(targetIndex);
+                          provider.setSelectedDate(normalized);
+                          setState(() {
+                            _contentOpacity = 1.0;
+                            _isTransitioning = false;
+                          });
+                        }
+                      },
+                    );
+                  } else {
+                    provider.setSelectedDate(normalized);
+                    _pageController?.animateToPage(
+                      targetIndex,
+                      duration: const Duration(
+                        milliseconds: HomeConstants.pageAnimationDurationMs,
+                      ),
+                      curve: Curves.easeInOut,
+                    );
+                  }
                 }
               },
             ),
           ),
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: navigableDates.length,
-              onPageChanged: (index) {
-                provider.setSelectedDate(navigableDates[index]);
-              },
-              itemBuilder: (context, index) {
-                if (!provider.isInitialized) {
-                  return Center(
+            child: !provider.isInitialized || _pageController == null
+                ? Center(
                     child: SpinKitThreeBounce(
                       color: Theme.of(context).colorScheme.primary,
                       size: HomeConstants.iconSizeMedium,
                     ),
-                  );
-                }
-
-                final date = navigableDates[index];
-                final isToday = date == _normalizeDate(DateTime.now());
-                final entry = provider.entries
-                    .where((e) => _normalizeDate(e.date) == date)
-                    .firstOrNull;
-
-                if (entry == null && isToday) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          HomeConstants.emptyTodayText,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: HomeConstants.spacingMedium),
-                        FloatingActionButton.large(
-                          onPressed: () {
-                            context.push(
-                              AppRoutes.composerPath,
-                              extra: {AppRoutes.argEntryDate: date},
-                            );
-                          },
-                          child: const Icon(Icons.add),
-                        ),
-                      ],
+                  )
+                : AnimatedOpacity(
+                    opacity: _contentOpacity,
+                    duration: const Duration(
+                      milliseconds: HomeConstants.pageAnimationDurationMs,
                     ),
-                  );
-                }
+                    curve: Curves.easeInOut,
+                    child: PageView.builder(
+                      key: _pageViewKey,
+                      controller: _pageController,
+                      physics: _isTransitioning
+                          ? const NeverScrollableScrollPhysics()
+                          : const BouncingScrollPhysics(),
+                      itemCount: navigableDates.length,
+                      onPageChanged: (index) {
+                        final newDate = navigableDates[index];
+                        if (provider.selectedDate != newDate) {
+                          provider.setSelectedDate(newDate);
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        final date = navigableDates[index];
+                        final isToday = date == _normalizeDate(DateTime.now());
+                        final entry = provider.entries
+                            .where((e) => _normalizeDate(e.date) == date)
+                            .firstOrNull;
 
-                if (entry == null) {
-                  return const SizedBox.shrink();
-                }
+                        if (entry == null && isToday) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  HomeConstants.emptyTodayText,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                                const SizedBox(
+                                  height: HomeConstants.spacingMedium,
+                                ),
+                                FloatingActionButton.large(
+                                  onPressed: () {
+                                    context.push(
+                                      AppRoutes.composerPath,
+                                      extra: {AppRoutes.argEntryDate: date},
+                                    );
+                                  },
+                                  child: const Icon(Icons.add),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
 
-                return Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: HomeConstants.spacingMedium,
+                        if (entry == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: HomeConstants.spacingMedium,
+                          ),
+                          child: EntryCard(
+                            entry: entry,
+                            isMuted: _isAudioMuted,
+                            onToggleMute: () {
+                              setState(() {
+                                _isAudioMuted = !_isAudioMuted;
+                              });
+                            },
+                            onDelete: () => _showDeleteDialog(context, entry),
+                            onEdit: () {
+                              context.push(
+                                AppRoutes.composerPath,
+                                extra: {
+                                  AppRoutes.argEntryDate: date,
+                                  AppRoutes.argExistingEntry: entry,
+                                },
+                              );
+                            },
+                            onExpand: () {
+                              context.push(
+                                AppRoutes.expandedEntryPath,
+                                extra: {AppRoutes.argExistingEntry: entry},
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  child: EntryCard(
-                    entry: entry,
-                    isMuted: _isAudioMuted,
-                    onToggleMute: () {
-                      setState(() {
-                        _isAudioMuted = !_isAudioMuted;
-                      });
-                    },
-                    onDelete: () => _showDeleteDialog(context, entry),
-                    onEdit: () {
-                      context.push(
-                        AppRoutes.composerPath,
-                        extra: {
-                          AppRoutes.argEntryDate: date,
-                          AppRoutes.argExistingEntry: entry,
-                        },
-                      );
-                    },
-                    onExpand: () {
-                      context.push(
-                        AppRoutes.expandedEntryPath,
-                        extra: {AppRoutes.argExistingEntry: entry},
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),

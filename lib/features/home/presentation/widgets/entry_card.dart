@@ -57,6 +57,12 @@ class EntryCard extends StatelessWidget {
         entry.songCoverUrl != null ||
         entry.songPreviewUrl != null;
 
+    final now = DateTime.now();
+    final isEditable =
+        entry.date.year == now.year &&
+        entry.date.month == now.month &&
+        entry.date.day == now.day;
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: HomeConstants.horizontalPadding,
@@ -184,14 +190,16 @@ class EntryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildCircleButton(
-                context,
-                Icons.delete_outline_rounded,
-                Theme.of(context).colorScheme.surfaceContainerHighest,
-                Theme.of(context).colorScheme.error,
-                onDelete,
-              ),
-              const SizedBox(width: HomeConstants.spacingExtraLarge),
+              if (isEditable) ...[
+                _buildCircleButton(
+                  context,
+                  Icons.delete_outline_rounded,
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+                  Theme.of(context).colorScheme.error,
+                  onDelete,
+                ),
+                const SizedBox(width: HomeConstants.spacingExtraLarge),
+              ],
               _buildCircleButton(
                 context,
                 Icons.fullscreen_rounded,
@@ -199,14 +207,16 @@ class EntryCard extends StatelessWidget {
                 Theme.of(context).colorScheme.onSurfaceVariant,
                 onExpand,
               ),
-              const SizedBox(width: HomeConstants.spacingExtraLarge),
-              _buildCircleButton(
-                context,
-                Icons.edit_rounded,
-                Theme.of(context).colorScheme.surfaceContainerHighest,
-                Theme.of(context).colorScheme.onSurfaceVariant,
-                onEdit,
-              ),
+              if (isEditable) ...[
+                const SizedBox(width: HomeConstants.spacingExtraLarge),
+                _buildCircleButton(
+                  context,
+                  Icons.edit_rounded,
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+                  Theme.of(context).colorScheme.onSurfaceVariant,
+                  onEdit,
+                ),
+              ],
             ],
           ),
         ],

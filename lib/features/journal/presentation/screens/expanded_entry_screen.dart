@@ -44,7 +44,7 @@ class _ExpandedEntryScreenState extends State<ExpandedEntryScreen> {
 
   Widget _buildCircleButton(
     BuildContext context, {
-    required IconData icon,
+    required Widget iconWidget,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -59,58 +59,7 @@ class _ExpandedEntryScreenState extends State<ExpandedEntryScreen> {
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
-          child: Icon(
-            icon,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            size: ComposerConstants.iconSizeMedium,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPillButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      height: ComposerConstants.circleButtonSize,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(
-          ComposerConstants.circleButtonSize / 2,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(
-            ComposerConstants.circleButtonSize / 2,
-          ),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  size: ComposerConstants.iconSizeMedium,
-                ),
-                const SizedBox(width: 8.0),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: Center(child: iconWidget),
         ),
       ),
     );
@@ -118,6 +67,12 @@ class _ExpandedEntryScreenState extends State<ExpandedEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isEditable =
+        widget.entry.date.year == now.year &&
+        widget.entry.date.month == now.month &&
+        widget.entry.date.day == now.day;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -130,43 +85,102 @@ class _ExpandedEntryScreenState extends State<ExpandedEntryScreen> {
           child: Center(
             child: _buildCircleButton(
               context,
-              icon: Icons.arrow_back_rounded,
+              iconWidget: Icon(
+                Icons.arrow_back_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: ComposerConstants.iconSizeMedium,
+              ),
               onTap: () => context.pop(),
             ),
           ),
         ),
         actions: [
-          Center(
-            child: _buildPillButton(
-              context,
-              icon: Icons.add_rounded,
-              label: 'Music',
-              onTap: () {},
-            ),
-          ),
-          const SizedBox(width: 12.0),
-          Padding(
-            padding: const EdgeInsets.only(
-              right: ComposerConstants.horizontalPadding,
-            ),
-            child: Center(
+          if (isEditable) ...[
+            Center(
               child: _buildCircleButton(
                 context,
-                icon: Icons.edit_rounded,
-                onTap: () {
-                  AppRouter.navigateWithFade(
-                    context,
-                    AppRoutes.composerPath,
-                    extra: {
-                      AppRoutes.argEntryDate: widget.entry.date,
-                      AppRoutes.argExistingEntry: widget.entry,
-                      AppRoutes.argIsFadeTransition: true,
-                    },
-                  );
-                },
+                iconWidget: SizedBox(
+                  width: 30.0,
+                  height: 26.0,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        child: Icon(
+                          Icons.music_note_rounded,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 24.0,
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: SizedBox(
+                          width: 10.0,
+                          height: 10.0,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 10.0,
+                                height: 2.5,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  borderRadius: BorderRadius.circular(1.0),
+                                ),
+                              ),
+                              Container(
+                                width: 2.5,
+                                height: 10.0,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  borderRadius: BorderRadius.circular(1.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                onTap: () {},
               ),
             ),
-          ),
+            const SizedBox(width: 12.0),
+            Padding(
+              padding: const EdgeInsets.only(
+                right: ComposerConstants.horizontalPadding,
+              ),
+              child: Center(
+                child: _buildCircleButton(
+                  context,
+                  iconWidget: Icon(
+                    Icons.edit_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: ComposerConstants.iconSizeMedium,
+                  ),
+                  onTap: () {
+                    AppRouter.navigateWithFade(
+                      context,
+                      AppRoutes.composerPath,
+                      extra: {
+                        AppRoutes.argEntryDate: widget.entry.date,
+                        AppRoutes.argExistingEntry: widget.entry,
+                        AppRoutes.argIsFadeTransition: true,
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ] else
+            const SizedBox(width: ComposerConstants.horizontalPadding),
         ],
       ),
       body: SafeArea(
