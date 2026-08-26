@@ -7,6 +7,8 @@ class HomeConstants {
   static const double spacingExtraLarge = 24.0;
   static const double spacingLarge = 32.0;
 
+  static const double emptyStateAlignmentY = -0.3;
+
   static const double entryCardRadius = 24.0;
   static const double entryCardPadding = 20.0;
   static const double entryCardMusicCoverSize = 56.0;
@@ -18,6 +20,8 @@ class HomeConstants {
   static const double dialogButtonHeight = 56.0;
   static const double iconSizeSmall = 20.0;
   static const double iconSizeMedium = 24.0;
+  static const double loaderSize = 20.0;
+  static const double emptyStateFabHeight = 96.0;
 
   static const double calendarMarginVertical = 8.0;
   static const double calendarPadding = 12.0;

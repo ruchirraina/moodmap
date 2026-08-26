@@ -11,6 +11,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/routing/app_router.dart';
 import 'features/journal/presentation/providers/journal_provider.dart';
+import 'features/music/presentation/providers/audio_provider.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +45,7 @@ class MoodMapApp extends StatelessWidget {
           create: (_) => ThemeProvider(initialThemeMode: initialThemeMode),
         ),
         ChangeNotifierProvider(create: (_) => JournalProvider()),
+        ChangeNotifierProvider(create: (_) => AudioProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

@@ -4,15 +4,17 @@ import '../../../../core/constants/date_constants.dart';
 import '../../../../features/journal/domain/models/journal_entry.dart';
 import '../../constants/home_constants.dart';
 
-class EntryCard extends StatelessWidget {
+class JournalCard extends StatelessWidget {
   final JournalEntry entry;
   final VoidCallback onExpand;
   final VoidCallback onEdit;
   final VoidCallback onToggleMute;
   final VoidCallback onDelete;
   final bool isMuted;
+  final bool isLoading;
+  final bool hasError;
 
-  const EntryCard({
+  const JournalCard({
     super.key,
     required this.entry,
     required this.onExpand,
@@ -20,6 +22,8 @@ class EntryCard extends StatelessWidget {
     required this.onToggleMute,
     required this.onDelete,
     required this.isMuted,
+    required this.isLoading,
+    required this.hasError,
   });
 
   String _formatDate(DateTime date) {
@@ -28,20 +32,46 @@ class EntryCard extends StatelessWidget {
 
   Widget _buildCircleButton(
     BuildContext context,
-    IconData icon,
+    Widget iconWidget,
     Color bgColor,
     Color iconColor,
-    VoidCallback onPressed,
-  ) {
+    VoidCallback onPressed, {
+    double size = HomeConstants.entryCardCircleButtonSize,
+  }) {
     return Container(
-      width: HomeConstants.entryCardCircleButtonSize,
-      height: HomeConstants.entryCardCircleButtonSize,
+      width: size,
+      height: size,
       decoration: BoxDecoration(shape: BoxShape.circle, color: bgColor),
       child: IconButton(
-        icon: Icon(icon, size: HomeConstants.iconSizeMedium),
+        icon: iconWidget,
         color: iconColor,
         onPressed: onPressed,
       ),
+    );
+  }
+
+  Widget _buildPlayButtonIcon(BuildContext context) {
+    if (isLoading) {
+      return SizedBox(
+        width: HomeConstants.loaderSize,
+        height: HomeConstants.loaderSize,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.0,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    if (hasError) {
+      return Icon(
+        Icons.priority_high_rounded,
+        color: Theme.of(context).colorScheme.error,
+        size: HomeConstants.iconSizeMedium,
+      );
+    }
+    return Icon(
+      isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      size: HomeConstants.iconSizeMedium,
     );
   }
 
@@ -84,33 +114,36 @@ class EntryCard extends StatelessWidget {
                   width: HomeConstants.entryCardMusicCoverSize,
                   height: HomeConstants.entryCardMusicCoverSize,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(
                       HomeConstants.entryCardMusicCoverRadius,
                     ),
                   ),
-                  child: entry.songCoverUrl != null
-                      ? ClipRRect(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.expand,
+                    children: [
+                      Icon(
+                        Icons.music_note_rounded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      if (entry.songCoverUrl != null &&
+                          entry.songCoverUrl!.isNotEmpty)
+                        ClipRRect(
                           borderRadius: BorderRadius.circular(
                             HomeConstants.entryCardMusicCoverRadius,
                           ),
                           child: Image.network(
                             entry.songCoverUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.music_note,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
                           ),
-                        )
-                      : Icon(
-                          Icons.music_note,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSecondaryContainer,
                         ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: HomeConstants.spacingMedium),
                 Expanded(
@@ -141,10 +174,12 @@ class EntryCard extends StatelessWidget {
                 ),
                 if (entry.songPreviewUrl != null) ...[
                   const SizedBox(width: HomeConstants.spacingTiny),
-                  IconButton(
-                    icon: Icon(isMuted ? Icons.volume_off : Icons.volume_up),
-                    color: Theme.of(context).colorScheme.secondary,
-                    onPressed: onToggleMute,
+                  _buildCircleButton(
+                    context,
+                    _buildPlayButtonIcon(context),
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                    Theme.of(context).colorScheme.onSurfaceVariant,
+                    onToggleMute,
                   ),
                 ],
               ],
@@ -193,7 +228,10 @@ class EntryCard extends StatelessWidget {
               if (isEditable) ...[
                 _buildCircleButton(
                   context,
-                  Icons.delete_outline_rounded,
+                  Icon(
+                    Icons.delete_outline_rounded,
+                    size: HomeConstants.iconSizeMedium,
+                  ),
                   Theme.of(context).colorScheme.surfaceContainerHighest,
                   Theme.of(context).colorScheme.error,
                   onDelete,
@@ -202,7 +240,10 @@ class EntryCard extends StatelessWidget {
               ],
               _buildCircleButton(
                 context,
-                Icons.fullscreen_rounded,
+                Icon(
+                  Icons.fullscreen_rounded,
+                  size: HomeConstants.iconSizeMedium,
+                ),
                 Theme.of(context).colorScheme.surfaceContainerHighest,
                 Theme.of(context).colorScheme.onSurfaceVariant,
                 onExpand,
@@ -211,7 +252,7 @@ class EntryCard extends StatelessWidget {
                 const SizedBox(width: HomeConstants.spacingExtraLarge),
                 _buildCircleButton(
                   context,
-                  Icons.edit_rounded,
+                  Icon(Icons.edit_rounded, size: HomeConstants.iconSizeMedium),
                   Theme.of(context).colorScheme.surfaceContainerHighest,
                   Theme.of(context).colorScheme.onSurfaceVariant,
                   onEdit,

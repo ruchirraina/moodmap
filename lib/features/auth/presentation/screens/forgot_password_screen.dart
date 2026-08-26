@@ -166,10 +166,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               style: FilledButton.styleFrom(
                                 backgroundColor: Theme.of(context)
                                     .colorScheme
-                                    .secondary,
+                                    .tertiary,
                                 foregroundColor: Theme.of(context)
                                     .colorScheme
-                                    .onSecondary,
+                                    .onTertiary,
                               ),
                               onPressed: provider.isLoading
                                   ? null

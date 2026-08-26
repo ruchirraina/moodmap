@@ -1,4 +1,4 @@
-class ComposerConstants {
+class JournalEditorConstants {
   static const int bodyCharacterLimit = 3000;
   static const int titleMaxLength = 100;
   static const int animationDurationMs = 300;
@@ -22,6 +22,9 @@ class ComposerConstants {
   static const double circleButtonSize = 48.0;
   static const double iconSizeMedium = 24.0;
   static const double buttonBorderWidth = 2.0;
+  static const double musicPillCoverSize = 32.0;
+  static const double spacingMedium = 16.0;
+  static const double spacingSmall = 8.0;
 
   static const String cancelText = 'Cancel';
   static const String doneText = 'Done';

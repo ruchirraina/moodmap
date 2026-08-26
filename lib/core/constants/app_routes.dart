@@ -13,10 +13,12 @@ class AppRoutes {
   static const String homeName = 'home';
   static const String profilePath = '/profile';
   static const String profileName = 'profile';
-  static const String composerPath = '/composer';
-  static const String composerName = 'composer';
-  static const String expandedEntryPath = '/expanded-entry';
-  static const String expandedEntryName = 'expanded_entry';
+  static const String journalEditorPath = '/journal-editor';
+  static const String journalEditorName = 'journal_editor';
+  static const String journalExpandedPath = '/journal-expanded';
+  static const String journalExpandedName = 'journal_expanded';
+  static const String musicSearchPath = '/music-search';
+  static const String musicSearchName = 'music_search';
 
   static const String argIsSequential = 'isSequential';
   static const String argIsPush = 'isPush';

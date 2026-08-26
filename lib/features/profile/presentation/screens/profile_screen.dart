@@ -9,6 +9,7 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/constants/app_animations.dart';
 import '../../../../core/widgets/shake_widget.dart';
+import '../../../music/presentation/providers/audio_provider.dart';
 import '../../constants/profile_constants.dart';
 import '../providers/profile_provider.dart';
 
@@ -36,27 +37,40 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: ProfileConstants.spacingSmall),
               Center(
-                child: provider.photoURL != null
-                    ? CircleAvatar(
-                        radius: ProfileConstants.avatarRadiusLarge,
-                        backgroundImage: NetworkImage(provider.photoURL!),
-                      )
-                    : CircleAvatar(
-                        radius: ProfileConstants.avatarRadiusLarge,
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .secondaryContainer,
-                        child: Text(
-                          _getAvatarText(provider.currentName),
-                          style: TextStyle(
-                            fontSize: ProfileConstants.spacingLarge,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSecondaryContainer,
+                child: CircleAvatar(
+                  radius: ProfileConstants.avatarRadiusLarge,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .secondaryContainer,
+                  child: ClipOval(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      fit: StackFit.expand,
+                      children: [
+                        Center(
+                          child: Text(
+                            _getAvatarText(provider.currentName),
+                            style: TextStyle(
+                              fontSize: ProfileConstants.spacingLarge,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                            ),
                           ),
                         ),
-                      ),
+                        if (provider.photoURL != null &&
+                            provider.photoURL!.isNotEmpty)
+                          Image.network(
+                            provider.photoURL!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: ProfileConstants.spacingMedium),
               Center(
@@ -179,6 +193,7 @@ class ProfileScreen extends StatelessWidget {
                 leading: const Icon(Icons.logout),
                 title: const Text(ProfileConstants.signOutText),
                 onTap: () async {
+                  context.read<AudioProvider>().stopAll();
                   await provider.signOut();
                   if (context.mounted) {
                     AppRouter.navigateSequentially(
@@ -243,12 +258,13 @@ class _ThemeSelector extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: AppAnimations.animatedSizeDuration,
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(
             vertical: ProfileConstants.spacingSmall,
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).colorScheme.primary
+                ? Theme.of(context).colorScheme.secondaryContainer
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(ProfileConstants.borderRadius),
           ),
@@ -257,7 +273,7 @@ class _ThemeSelector extends StatelessWidget {
               Icon(
                 icon,
                 color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
+                    ? Theme.of(context).colorScheme.onSecondaryContainer
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: ProfileConstants.spacingTiny),
@@ -266,7 +282,7 @@ class _ThemeSelector extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
-                      ? Theme.of(context).colorScheme.onPrimary
+                      ? Theme.of(context).colorScheme.onSecondaryContainer
                       : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -628,6 +644,7 @@ class _DeleteAccountDialog extends StatelessWidget {
                               onPressed: currentProvider.isLoading
                                   ? null
                                   : () async {
+                                      context.read<AudioProvider>().stopAll();
                                       final success = await currentProvider
                                           .deleteAccount();
                                       if (success && context.mounted) {

@@ -210,7 +210,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             style: TextButton.styleFrom(
                               foregroundColor: Theme.of(context)
                                   .colorScheme
-                                  .primary,
+                                  .tertiary,
                             ),
                             onPressed: isAnyLoading
                                 ? null
@@ -233,7 +233,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                           );
                                         });
                                   },
-                            child: const Text(AuthConstants.forgotPasswordText),
+                            child: const Text(
+                              AuthConstants.forgotPasswordText,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                         const SizedBox(height: AuthConstants.spacingLarge),
@@ -243,10 +246,10 @@ class _SignInScreenState extends State<SignInScreen> {
                             style: FilledButton.styleFrom(
                               backgroundColor: Theme.of(context)
                                   .colorScheme
-                                  .secondary,
+                                  .primary,
                               foregroundColor: Theme.of(context)
                                   .colorScheme
-                                  .onSecondary,
+                                  .onPrimary,
                             ),
                             onPressed: isAnyLoading
                                 ? null
@@ -300,7 +303,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               style: TextButton.styleFrom(
                                 foregroundColor: Theme.of(context)
                                     .colorScheme
-                                    .primary,
+                                    .tertiary,
                               ),
                               onPressed: isAnyLoading
                                   ? null
@@ -316,7 +319,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                         }
                                       });
                                     },
-                              child: const Text(AuthConstants.signUpButtonText),
+                              child: const Text(
+                                AuthConstants.signUpButtonText,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ),

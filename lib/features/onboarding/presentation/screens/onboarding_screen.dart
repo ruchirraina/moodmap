@@ -117,10 +117,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               style: FilledButton.styleFrom(
                                 backgroundColor: Theme.of(context)
                                     .colorScheme
-                                    .secondary,
+                                    .primary,
                                 foregroundColor: Theme.of(context)
                                     .colorScheme
-                                    .onSecondary,
+                                    .onPrimary,
                               ),
                               onPressed: () {
                                 context.go(AppRoutes.signUpPath);
@@ -152,13 +152,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Theme.of(context)
                                       .colorScheme
-                                      .primary,
+                                      .tertiary,
                                 ),
                                 onPressed: () {
                                   context.go(AppRoutes.signInPath);
                                 },
                                 child: const Text(
                                   OnboardingConstants.signInButtonText,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],

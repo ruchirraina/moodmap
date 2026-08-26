@@ -10,8 +10,9 @@ import '../../../../core/constants/app_routes.dart';
 import '../../constants/home_constants.dart';
 import '../../../journal/presentation/providers/journal_provider.dart';
 import '../../../journal/domain/models/journal_entry.dart';
+import '../../../music/presentation/providers/audio_provider.dart';
 import '../providers/home_provider.dart';
-import '../widgets/entry_card.dart';
+import '../widgets/journal_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,15 +23,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   PageController? _pageController;
-  bool _isAudioMuted = true;
   double _contentOpacity = 1.0;
   bool _isTransitioning = false;
   final Key _pageViewKey = const ValueKey('initial_page_view');
 
+  JournalProvider? _journalProvider;
+  String? _lastPlayedUrl;
+  bool _hasInitializedAudio = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _journalProvider = context.read<JournalProvider>();
+        _journalProvider?.addListener(_syncAudio);
+        _syncAudio();
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _journalProvider?.removeListener(_syncAudio);
     _pageController?.dispose();
     super.dispose();
+  }
+
+  void _syncAudio() {
+    if (!mounted) return;
+    final provider = _journalProvider;
+    if (provider != null && provider.isInitialized) {
+      final entry = provider.entryForSelectedDate;
+      final url = entry?.songPreviewUrl;
+      if (!_hasInitializedAudio || _lastPlayedUrl != url) {
+        _hasInitializedAudio = true;
+        _lastPlayedUrl = url;
+        context.read<AudioProvider>().setGlobalTrack(url);
+      }
+    }
   }
 
   String _getGreeting() {
@@ -210,10 +241,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildEmptyStateLoader(BuildContext context) {
+    return Align(
+      alignment: const Alignment(0.0, HomeConstants.emptyStateAlignmentY),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Opacity(
+            opacity: 0.0,
+            child: Text(
+              HomeConstants.emptyTodayText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: HomeConstants.spacingMedium),
+          SizedBox(
+            height: HomeConstants.emptyStateFabHeight,
+            width: HomeConstants.emptyStateFabHeight,
+            child: Center(
+              child: SpinKitThreeBounce(
+                color: Theme.of(context).colorScheme.primary,
+                size: HomeConstants.iconSizeMedium,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
     final homeProvider = context.watch<HomeProvider>();
+    final audioProvider = context.watch<AudioProvider>();
 
     final navigableDates = _getNavigableDates(provider);
     final selectedDate = _normalizeDate(provider.selectedDate);
@@ -247,26 +311,40 @@ class _HomeScreenState extends State<HomeScreen> {
               right: HomeConstants.horizontalPadding,
             ),
             child: IconButton(
-              icon: homeProvider.photoURL != null
-                  ? CircleAvatar(
-                      backgroundImage: NetworkImage(homeProvider.photoURL!),
-                    )
-                  : CircleAvatar(
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .secondaryContainer,
-                      child: Text(
-                        firstName.isNotEmpty
-                            ? firstName[0].toUpperCase()
-                            : HomeConstants.fallbackAvatarText,
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSecondaryContainer,
-                          fontWeight: FontWeight.bold,
+              icon: CircleAvatar(
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer,
+                child: ClipOval(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.expand,
+                    children: [
+                      Center(
+                        child: Text(
+                          firstName.isNotEmpty
+                              ? firstName[0].toUpperCase()
+                              : HomeConstants.fallbackAvatarText,
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
+                      if (homeProvider.photoURL != null &&
+                          homeProvider.photoURL!.isNotEmpty)
+                        Image.network(
+                          homeProvider.photoURL!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
               onPressed: () {
                 context.push(AppRoutes.profilePath);
               },
@@ -385,12 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child: !provider.isInitialized || _pageController == null
-                ? Center(
-                    child: SpinKitThreeBounce(
-                      color: Theme.of(context).colorScheme.primary,
-                      size: HomeConstants.iconSizeMedium,
-                    ),
-                  )
+                ? _buildEmptyStateLoader(context)
                 : AnimatedOpacity(
                     opacity: _contentOpacity,
                     duration: const Duration(
@@ -418,12 +491,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             .firstOrNull;
 
                         if (entry == null && isToday) {
-                          return Center(
+                          return Align(
+                            alignment: const Alignment(
+                              0.0,
+                              HomeConstants.emptyStateAlignmentY,
+                            ),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
                                   HomeConstants.emptyTodayText,
+                                  textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium,
@@ -431,14 +511,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(
                                   height: HomeConstants.spacingMedium,
                                 ),
-                                FloatingActionButton.large(
-                                  onPressed: () {
-                                    context.push(
-                                      AppRoutes.composerPath,
-                                      extra: {AppRoutes.argEntryDate: date},
-                                    );
-                                  },
-                                  child: const Icon(Icons.add),
+                                SizedBox(
+                                  height: HomeConstants.emptyStateFabHeight,
+                                  width: HomeConstants.emptyStateFabHeight,
+                                  child: Center(
+                                    child: FloatingActionButton.large(
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                      foregroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      onPressed: () {
+                                        context.push(
+                                          AppRoutes.journalEditorPath,
+                                          extra: {AppRoutes.argEntryDate: date},
+                                        );
+                                      },
+                                      child: const Icon(Icons.add),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -453,18 +545,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.only(
                             bottom: HomeConstants.spacingMedium,
                           ),
-                          child: EntryCard(
+                          child: JournalCard(
                             entry: entry,
-                            isMuted: _isAudioMuted,
-                            onToggleMute: () {
-                              setState(() {
-                                _isAudioMuted = !_isAudioMuted;
-                              });
-                            },
+                            isMuted: audioProvider.isMuted,
+                            isLoading: audioProvider.isGlobalLoading,
+                            hasError: audioProvider.hasGlobalError,
+                            onToggleMute: () => audioProvider.toggleMute(),
                             onDelete: () => _showDeleteDialog(context, entry),
                             onEdit: () {
                               context.push(
-                                AppRoutes.composerPath,
+                                AppRoutes.journalEditorPath,
                                 extra: {
                                   AppRoutes.argEntryDate: date,
                                   AppRoutes.argExistingEntry: entry,
@@ -473,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             onExpand: () {
                               context.push(
-                                AppRoutes.expandedEntryPath,
+                                AppRoutes.journalExpandedPath,
                                 extra: {AppRoutes.argExistingEntry: entry},
                               );
                             },

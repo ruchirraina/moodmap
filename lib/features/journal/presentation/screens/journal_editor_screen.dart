@@ -8,24 +8,24 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/date_constants.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../domain/models/journal_entry.dart';
-import '../providers/composer_provider.dart';
-import '../../constants/composer_constants.dart';
+import '../providers/journal_editor_provider.dart';
+import '../../constants/journal_editor_constants.dart';
 
-class ComposerScreen extends StatefulWidget {
+class JournalEditorScreen extends StatefulWidget {
   final DateTime entryDate;
   final JournalEntry? existingEntry;
 
-  const ComposerScreen({
+  const JournalEditorScreen({
     super.key,
     required this.entryDate,
     this.existingEntry,
   });
 
   @override
-  State<ComposerScreen> createState() => _ComposerScreenState();
+  State<JournalEditorScreen> createState() => _JournalEditorScreenState();
 }
 
-class _ComposerScreenState extends State<ComposerScreen> {
+class _JournalEditorScreenState extends State<JournalEditorScreen> {
   late TextEditingController _titleController;
   late TextEditingController _bodyController;
   late DateTime _sessionStart;
@@ -43,11 +43,13 @@ class _ComposerScreenState extends State<ComposerScreen> {
     _bodyController = TextEditingController(text: widget.existingEntry?.body);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ComposerProvider>().updateCharacterCount(
+      context.read<JournalEditorProvider>().updateCharacterCount(
         _bodyController.text.length,
       );
       if (_titleController.text.isNotEmpty) {
-        context.read<ComposerProvider>().onTitleChanged(_titleController.text);
+        context.read<JournalEditorProvider>().onTitleChanged(
+          _titleController.text,
+        );
       }
     });
   }
@@ -61,36 +63,36 @@ class _ComposerScreenState extends State<ComposerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ComposerProvider>();
+    final provider = context.watch<JournalEditorProvider>();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leadingWidth: ComposerConstants.appBarLeadingWidth,
+        leadingWidth: JournalEditorConstants.appBarLeadingWidth,
         leading: Padding(
           padding: const EdgeInsets.only(
-            left: ComposerConstants.horizontalPadding,
+            left: JournalEditorConstants.horizontalPadding,
           ),
           child: Center(
             child: SizedBox(
-              width: ComposerConstants.circleButtonSize,
-              height: ComposerConstants.circleButtonSize,
+              width: JournalEditorConstants.circleButtonSize,
+              height: JournalEditorConstants.circleButtonSize,
               child: IconButton.outlined(
                 icon: const Icon(Icons.close_rounded),
-                iconSize: ComposerConstants.iconSizeMedium,
+                iconSize: JournalEditorConstants.iconSizeMedium,
                 style: IconButton.styleFrom(
                   side: BorderSide(
                     color: provider.isLoading
                         ? Theme.of(context).colorScheme.tertiary.withValues(
-                            alpha: ComposerConstants.disabledBorderAlpha,
+                            alpha: JournalEditorConstants.disabledBorderAlpha,
                           )
                         : Theme.of(context).colorScheme.tertiary,
-                    width: ComposerConstants.buttonBorderWidth,
+                    width: JournalEditorConstants.buttonBorderWidth,
                   ),
                   foregroundColor: provider.isLoading
                       ? Theme.of(context).colorScheme.tertiary.withValues(
-                          alpha: ComposerConstants.disabledTextAlpha,
+                          alpha: JournalEditorConstants.disabledTextAlpha,
                         )
                       : Theme.of(context).colorScheme.tertiary,
                 ),
@@ -102,23 +104,23 @@ class _ComposerScreenState extends State<ComposerScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(
-              right: ComposerConstants.horizontalPadding,
+              right: JournalEditorConstants.horizontalPadding,
             ),
             child: Center(
               child: SizedBox(
-                width: ComposerConstants.circleButtonSize,
-                height: ComposerConstants.circleButtonSize,
+                width: JournalEditorConstants.circleButtonSize,
+                height: JournalEditorConstants.circleButtonSize,
                 child: IconButton.filled(
                   icon: provider.isLoading
                       ? SpinKitThreeBounce(
                           color: Theme.of(context).colorScheme.onSurface
                               .withValues(
-                                alpha: ComposerConstants.disabledTextAlpha,
+                                alpha: JournalEditorConstants.disabledTextAlpha,
                               ),
-                          size: ComposerConstants.loaderSize,
+                          size: JournalEditorConstants.loaderSize,
                         )
                       : const Icon(Icons.check_rounded),
-                  iconSize: ComposerConstants.iconSizeMedium,
+                  iconSize: JournalEditorConstants.iconSizeMedium,
                   style: IconButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     foregroundColor: Theme.of(context).colorScheme.onSecondary,
@@ -129,7 +131,7 @@ class _ComposerScreenState extends State<ComposerScreen> {
                       : () async {
                           FocusScope.of(context).unfocus();
                           final savedEntry = await context
-                              .read<ComposerProvider>()
+                              .read<JournalEditorProvider>()
                               .saveEntry(
                                 sessionStart: _sessionStart,
                                 entryDate: widget.entryDate,
@@ -142,7 +144,7 @@ class _ComposerScreenState extends State<ComposerScreen> {
                             if (savedEntry != null) {
                               AppRouter.navigateWithFade(
                                 context,
-                                AppRoutes.expandedEntryPath,
+                                AppRoutes.journalExpandedPath,
                                 extra: {
                                   AppRoutes.argExistingEntry: savedEntry,
                                   AppRoutes.argIsFadeTransition: true,
@@ -164,14 +166,14 @@ class _ComposerScreenState extends State<ComposerScreen> {
           children: [
             AnimatedSize(
               duration: const Duration(
-                milliseconds: ComposerConstants.animationDurationMs,
+                milliseconds: JournalEditorConstants.animationDurationMs,
               ),
               child: provider.error != null
                   ? Container(
                       width: double.infinity,
                       color: Theme.of(context).colorScheme.errorContainer,
                       padding: const EdgeInsets.all(
-                        ComposerConstants.errorPadding,
+                        JournalEditorConstants.errorPadding,
                       ),
                       child: Text(
                         provider.error!,
@@ -186,13 +188,15 @@ class _ComposerScreenState extends State<ComposerScreen> {
             Expanded(
               child: Container(
                 margin: const EdgeInsets.all(
-                  ComposerConstants.horizontalPadding,
+                  JournalEditorConstants.horizontalPadding,
                 ),
-                padding: const EdgeInsets.all(ComposerConstants.cardPadding),
+                padding: const EdgeInsets.all(
+                  JournalEditorConstants.cardPadding,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(
-                    ComposerConstants.cardRadius,
+                    JournalEditorConstants.cardRadius,
                   ),
                 ),
                 child: Column(
@@ -213,30 +217,34 @@ class _ComposerScreenState extends State<ComposerScreen> {
                                   .colorScheme
                                   .onSurfaceVariant
                                   .withValues(
-                                    alpha: ComposerConstants.alphaHalf,
+                                    alpha: JournalEditorConstants.alphaHalf,
                                   ),
                               fontWeight: FontWeight.bold,
                             ),
                         border: InputBorder.none,
                       ),
                       onChanged: (text) {
-                        context.read<ComposerProvider>().onTitleChanged(text);
+                        context.read<JournalEditorProvider>().onTitleChanged(
+                          text,
+                        );
                       },
                     ),
                     AnimatedSize(
                       duration: const Duration(
-                        milliseconds: ComposerConstants.animationDurationMs,
+                        milliseconds:
+                            JournalEditorConstants.animationDurationMs,
                       ),
                       child: provider.titleError != null
                           ? Padding(
                               padding: const EdgeInsets.only(
-                                top: ComposerConstants.errorTopPadding,
+                                top: JournalEditorConstants.errorTopPadding,
                               ),
                               child: Text(
                                 provider.titleError!,
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.error,
-                                  fontSize: ComposerConstants.errorFontSize,
+                                  fontSize:
+                                      JournalEditorConstants.errorFontSize,
                                 ),
                               ),
                             )
@@ -244,36 +252,36 @@ class _ComposerScreenState extends State<ComposerScreen> {
                     ),
                     Divider(
                       color: Theme.of(context).colorScheme.outlineVariant
-                          .withValues(alpha: ComposerConstants.alphaHalf),
+                          .withValues(alpha: JournalEditorConstants.alphaHalf),
                     ),
                     Expanded(
                       child: TextField(
                         controller: _bodyController,
                         maxLines: null,
                         expands: true,
-                        maxLength: ComposerConstants.bodyCharacterLimit,
+                        maxLength: JournalEditorConstants.bodyCharacterLimit,
                         maxLengthEnforcement: MaxLengthEnforcement.none,
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: const InputDecoration(
-                          hintText: ComposerConstants.bodyHint,
+                          hintText: JournalEditorConstants.bodyHint,
                           border: InputBorder.none,
                           counterText: '',
                         ),
                         onChanged: (text) {
-                          context.read<ComposerProvider>().updateCharacterCount(
-                            text.length,
-                          );
+                          context
+                              .read<JournalEditorProvider>()
+                              .updateCharacterCount(text.length);
                         },
                       ),
                     ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        '${provider.currentLength} / ${ComposerConstants.bodyCharacterLimit}',
+                        '${provider.currentLength} / ${JournalEditorConstants.bodyCharacterLimit}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color:
                               provider.currentLength >
-                                  ComposerConstants.bodyCharacterLimit
+                                  JournalEditorConstants.bodyCharacterLimit
                               ? Theme.of(context).colorScheme.error
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),

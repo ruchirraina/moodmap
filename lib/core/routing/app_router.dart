@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/splash/presentation/providers/splash_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
@@ -14,10 +15,12 @@ import '../../features/auth/presentation/providers/sign_in_provider.dart';
 import '../../features/auth/presentation/providers/forgot_password_provider.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart';
 import '../../features/home/presentation/providers/home_provider.dart';
-import '../../features/journal/presentation/screens/composer_screen.dart';
-import '../../features/journal/presentation/providers/composer_provider.dart';
+import '../../features/journal/presentation/screens/journal_editor_screen.dart';
+import '../../features/journal/presentation/providers/journal_editor_provider.dart';
 import '../../features/journal/domain/models/journal_entry.dart';
-import '../../features/journal/presentation/screens/expanded_entry_screen.dart';
+import '../../features/journal/presentation/screens/journal_expanded_screen.dart';
+import '../../features/music/presentation/screens/music_search_screen.dart';
+import '../../features/music/presentation/providers/music_search_provider.dart';
 import '../constants/app_routes.dart';
 import '../constants/app_animations.dart';
 
@@ -249,7 +252,10 @@ class AppRouter {
         name: AppRoutes.splashName,
         pageBuilder: (context, state) => _buildCrossFadeTransitionPage(
           key: state.pageKey,
-          child: const SplashScreen(),
+          child: ChangeNotifierProvider(
+            create: (_) => SplashProvider(),
+            child: const SplashScreen(),
+          ),
         ),
       ),
       GoRoute(
@@ -579,8 +585,8 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: AppRoutes.composerPath,
-        name: AppRoutes.composerName,
+        path: AppRoutes.journalEditorPath,
+        name: AppRoutes.journalEditorName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final entryDate =
@@ -590,8 +596,8 @@ class AppRouter {
           final isFade = extra?[AppRoutes.argIsFadeTransition] == true;
 
           final child = ChangeNotifierProvider(
-            create: (_) => ComposerProvider(),
-            child: ComposerScreen(
+            create: (_) => JournalEditorProvider(),
+            child: JournalEditorScreen(
               entryDate: entryDate,
               existingEntry: existingEntry,
             ),
@@ -610,15 +616,15 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: AppRoutes.expandedEntryPath,
-        name: AppRoutes.expandedEntryName,
+        path: AppRoutes.journalExpandedPath,
+        name: AppRoutes.journalExpandedName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final existingEntry =
               extra?[AppRoutes.argExistingEntry] as JournalEntry;
           final isFade = extra?[AppRoutes.argIsFadeTransition] == true;
 
-          final child = ExpandedEntryScreen(entry: existingEntry);
+          final child = JournalExpandedScreen(entry: existingEntry);
 
           if (isFade) {
             return _buildPureFadeTransitionPage(
@@ -629,6 +635,19 @@ class AppRouter {
           return _buildScaleFadeTransitionPage(
             key: state.pageKey,
             child: child,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.musicSearchPath,
+        name: AppRoutes.musicSearchName,
+        pageBuilder: (context, state) {
+          return _buildSlideTransitionPage(
+            key: state.pageKey,
+            child: ChangeNotifierProvider(
+              create: (_) => MusicSearchProvider(),
+              child: const MusicSearchScreen(),
+            ),
           );
         },
       ),

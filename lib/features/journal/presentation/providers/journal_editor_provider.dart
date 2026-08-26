@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models/journal_entry.dart';
 import '../../data/services/journal_service.dart';
-import '../../constants/composer_constants.dart';
+import '../../constants/journal_editor_constants.dart';
 import '../../constants/journal_constants.dart';
 import '../../../auth/data/services/auth_service.dart';
 
-class ComposerProvider extends ChangeNotifier {
+class JournalEditorProvider extends ChangeNotifier {
   final JournalService _service = JournalService();
   final AuthService _authService = AuthService();
 
@@ -24,7 +24,7 @@ class ComposerProvider extends ChangeNotifier {
 
   bool get hasValidationErrors =>
       _titleError != null ||
-      _currentLength > ComposerConstants.bodyCharacterLimit;
+      _currentLength > JournalEditorConstants.bodyCharacterLimit;
 
   void updateCharacterCount(int length) {
     _currentLength = length;
@@ -38,9 +38,9 @@ class ComposerProvider extends ChangeNotifier {
 
   void onTitleChanged(String title) {
     _currentTitleLength = title.length;
-    if (title.length > ComposerConstants.titleMaxLength) {
+    if (title.length > JournalEditorConstants.titleMaxLength) {
       _titleError =
-          'Title cannot exceed ${ComposerConstants.titleMaxLength} characters';
+          'Title cannot exceed ${JournalEditorConstants.titleMaxLength} characters';
     } else {
       _titleError = null;
     }
@@ -65,7 +65,7 @@ class ComposerProvider extends ChangeNotifier {
     if (now.day != sessionStart.day ||
         now.month != sessionStart.month ||
         now.year != sessionStart.year) {
-      _error = ComposerConstants.pastMidnightError;
+      _error = JournalEditorConstants.pastMidnightError;
       notifyListeners();
       return null;
     }
@@ -125,7 +125,7 @@ class ComposerProvider extends ChangeNotifier {
     );
 
     await Future.delayed(
-      const Duration(milliseconds: ComposerConstants.saveDelayMs),
+      const Duration(milliseconds: JournalEditorConstants.saveDelayMs),
     );
 
     try {

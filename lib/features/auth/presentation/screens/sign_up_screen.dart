@@ -245,10 +245,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             style: FilledButton.styleFrom(
                               backgroundColor: Theme.of(context)
                                   .colorScheme
-                                  .secondary,
+                                  .primary,
                               foregroundColor: Theme.of(context)
                                   .colorScheme
-                                  .onSecondary,
+                                  .onPrimary,
                             ),
                             onPressed: isAnyLoading
                                 ? null
@@ -303,7 +303,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               style: TextButton.styleFrom(
                                 foregroundColor: Theme.of(context)
                                     .colorScheme
-                                    .primary,
+                                    .tertiary,
                               ),
                               onPressed: isAnyLoading
                                   ? null
@@ -319,7 +319,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         }
                                       });
                                     },
-                              child: const Text(AuthConstants.signInButtonText),
+                              child: const Text(
+                                AuthConstants.signInButtonText,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ),
