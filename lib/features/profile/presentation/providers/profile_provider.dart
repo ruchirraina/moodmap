@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../constants/profile_constants.dart';
 import '../../data/services/profile_service.dart';
+import '../../../journal/data/services/journal_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final ProfileService _profileService = ProfileService();
+  final JournalService _journalService = JournalService();
 
   bool _isLoading = false;
   bool _isNameFocused = false;
@@ -117,6 +119,10 @@ class ProfileProvider extends ChangeNotifier {
 
     bool isSuccess = false;
     try {
+      final userId = _profileService.currentUser?.uid;
+      if (userId != null) {
+        await _journalService.deleteAllUserEntries(userId);
+      }
       await _profileService.deleteAccount();
       isSuccess = true;
     } catch (e) {

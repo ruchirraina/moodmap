@@ -31,6 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _lastPlayedUrl;
   bool _hasInitializedAudio = false;
 
+  DateTime? _focusedDay;
+  DateTime? _lastSelectedDate;
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +85,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime _normalizeDate(DateTime date) =>
       DateTime.utc(date.year, date.month, date.day);
+
+  DateTime _getStartOfWeek(DateTime date) {
+    final normalized = _normalizeDate(date);
+    final int daysToSubtract = normalized.weekday == 7 ? 0 : normalized.weekday;
+    return normalized.subtract(Duration(days: daysToSubtract));
+  }
+
+  DateTime _getEndOfWeek(DateTime date) {
+    return _getStartOfWeek(date).add(const Duration(days: 6));
+  }
 
   List<DateTime> _getNavigableDates(JournalProvider provider) {
     final dates = provider.entries
@@ -283,6 +296,18 @@ class _HomeScreenState extends State<HomeScreen> {
     final selectedDate = _normalizeDate(provider.selectedDate);
     final targetPageIndex = navigableDates.indexOf(selectedDate);
 
+    final earliestDate = navigableDates.isNotEmpty
+        ? navigableDates.first
+        : selectedDate;
+    final firstCalendarDay = _getStartOfWeek(earliestDate);
+    final today = _normalizeDate(DateTime.now());
+    final lastCalendarDay = _getEndOfWeek(today);
+
+    if (_lastSelectedDate != selectedDate) {
+      _focusedDay = selectedDate;
+      _lastSelectedDate = selectedDate;
+    }
+
     if (provider.isInitialized && _pageController == null) {
       _pageController = PageController(
         initialPage: targetPageIndex != -1 ? targetPageIndex : 0,
@@ -321,16 +346,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     fit: StackFit.expand,
                     children: [
                       Center(
-                        child: Text(
-                          firstName.isNotEmpty
-                              ? firstName[0].toUpperCase()
-                              : HomeConstants.fallbackAvatarText,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSecondaryContainer,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSecondaryContainer,
                         ),
                       ),
                       if (homeProvider.photoURL != null &&
@@ -367,18 +387,52 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             child: TableCalendar(
-              firstDay: navigableDates.isNotEmpty
-                  ? navigableDates.first
-                  : selectedDate,
-              lastDay: _normalizeDate(DateTime.now()),
-              focusedDay: selectedDate,
-              currentDay: _normalizeDate(DateTime.now()),
+              key: ValueKey(firstCalendarDay),
+              firstDay: firstCalendarDay,
+              lastDay: lastCalendarDay,
+              focusedDay: _focusedDay ?? selectedDate,
+              currentDay: today,
+              startingDayOfWeek: StartingDayOfWeek.sunday,
               selectedDayPredicate: (day) =>
                   _normalizeDate(day) == selectedDate,
               calendarFormat: CalendarFormat.week,
+              onPageChanged: (focusedDay) {
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
+              },
               headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
+                leftChevronVisible: false,
+                rightChevronVisible: false,
+                headerMargin: EdgeInsets.only(
+                  bottom: HomeConstants.spacingSmall,
+                ),
+              ),
+              calendarBuilders: CalendarBuilders(
+                dowBuilder: (context, day) {
+                  const weekdays = [
+                    'Mon',
+                    'Tue',
+                    'Wed',
+                    'Thu',
+                    'Fri',
+                    'Sat',
+                    'Sun',
+                  ];
+                  final weekdayStr = weekdays[day.weekday - 1];
+
+                  return Center(
+                    child: Text(
+                      weekdayStr,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                },
               ),
               calendarStyle: CalendarStyle(
                 selectedDecoration: BoxDecoration(
@@ -421,12 +475,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 final normalized = _normalizeDate(selectedDay);
                 if (navigableDates.contains(normalized)) {
                   final targetIndex = navigableDates.indexOf(normalized);
-                  final currentIndex = _pageController?.hasClients == true
-                      ? _pageController!.page!.round()
-                      : (_pageController?.initialPage ?? 0);
-                  final delta = (targetIndex - currentIndex).abs();
+                  final currentIndex = navigableDates.indexOf(selectedDate);
+                  final indexDifference = (targetIndex - currentIndex).abs();
 
-                  if (delta > 1) {
+                  setState(() {
+                    _focusedDay = focusedDay;
+                  });
+
+                  if (indexDifference > 1) {
                     setState(() {
                       _isTransitioning = true;
                       _contentOpacity = 0.0;
@@ -485,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                       itemBuilder: (context, index) {
                         final date = navigableDates[index];
-                        final isToday = date == _normalizeDate(DateTime.now());
+                        final isToday = date == today;
                         final entry = provider.entries
                             .where((e) => _normalizeDate(e.date) == date)
                             .firstOrNull;

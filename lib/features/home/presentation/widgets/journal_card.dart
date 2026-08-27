@@ -56,7 +56,7 @@ class JournalCard extends StatelessWidget {
         width: HomeConstants.loaderSize,
         height: HomeConstants.loaderSize,
         child: CircularProgressIndicator(
-          strokeWidth: 2.0,
+          strokeWidth: HomeConstants.loaderStrokeWidth,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );

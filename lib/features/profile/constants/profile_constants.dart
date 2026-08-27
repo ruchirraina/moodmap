@@ -10,6 +10,7 @@ class ProfileConstants {
   static const double borderWidth = 2.0;
   static const double inputVerticalPadding = 16.0;
   static const double iconSizeSmall = 24.0;
+  static const double fallbackIconSize = 48.0;
   static const double buttonHeight = 56.0;
   static const double loaderSize = 20.0;
   static const double dialogBlurSigma = 8.0;
@@ -19,8 +20,6 @@ class ProfileConstants {
   static const double disabledTextAlpha = 0.38;
 
   static const int nameMaxLength = 50;
-
-  static const String fallbackAvatarText = '?';
 
   static const String themeSectionTitle = 'Theme Preferences';
   static const String lightModeText = 'Light';

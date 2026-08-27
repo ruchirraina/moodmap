@@ -42,16 +42,14 @@ class JournalProvider extends ChangeNotifier {
   DateTime get selectedDate => _selectedDate;
 
   JournalEntry? get entryForSelectedDate {
-    try {
-      return _entries.firstWhere(
-        (entry) =>
-            entry.date.year == _selectedDate.year &&
-            entry.date.month == _selectedDate.month &&
-            entry.date.day == _selectedDate.day,
-      );
-    } catch (_) {
-      return null;
-    }
+    return _entries
+        .where(
+          (entry) =>
+              entry.date.year == _selectedDate.year &&
+              entry.date.month == _selectedDate.month &&
+              entry.date.day == _selectedDate.day,
+        )
+        .firstOrNull;
   }
 
   void setSelectedDate(DateTime date) {

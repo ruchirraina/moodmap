@@ -5,7 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 
 import '../../constants/music_constants.dart';
 
-class AudioProvider extends ChangeNotifier {
+class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   final AudioPlayer _searchPlayer = AudioPlayer();
   final Map<String, AudioPlayer> _globalPlayers = {};
   final List<String> _globalPlayerKeys = [];
@@ -25,10 +25,16 @@ class AudioProvider extends ChangeNotifier {
   bool _isGlobalLoading = false;
   bool _hasGlobalError = false;
 
+  bool _isBackgrounded = false;
+  bool _wasSearchPlayingBeforeBackground = false;
+  bool _wasGlobalPlayingBeforeBackground = false;
+
   Timer? _searchTimeout;
   Timer? _globalTimeout;
 
   AudioProvider() {
+    WidgetsBinding.instance.addObserver(this);
+
     _searchPlayer.setReleaseMode(ReleaseMode.loop);
 
     _searchPlayer.onPlayerStateChanged.listen((state) {
@@ -72,6 +78,72 @@ class AudioProvider extends ChangeNotifier {
       _hasSearchError = true;
       notifyListeners();
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isBackgrounded) {
+        _isBackgrounded = false;
+        _resumeFromBackground();
+      }
+    } else {
+      if (!_isBackgrounded) {
+        _isBackgrounded = true;
+        _wasSearchPlayingBeforeBackground =
+            (_isSearchPlaying || _isSearchLoading) && _currentSearchUrl != null;
+        _wasGlobalPlayingBeforeBackground =
+            (!_isMuted || _isGlobalLoading) && _currentGlobalUrl != null;
+        _pauseAllImmediately();
+      }
+    }
+  }
+
+  void _resumeFromBackground() async {
+    if (_wasSearchPlayingBeforeBackground && _currentSearchUrl != null) {
+      _isSearchPlaying = true;
+      _isSearchLoading = false;
+      _hasSearchError = false;
+      notifyListeners();
+
+      if (_searchPlayer.state == PlayerState.stopped ||
+          _searchPlayer.state == PlayerState.completed) {
+        await _searchPlayer.seek(Duration.zero);
+      }
+      await _fadeIn(_searchPlayer, () => _searchPlayer.resume());
+    } else if (_wasGlobalPlayingBeforeBackground && _currentGlobalUrl != null) {
+      _isMuted = false;
+      notifyListeners();
+      await _playGlobalTrack(fade: true);
+    }
+  }
+
+  void _pauseAllImmediately() {
+    bool changed = false;
+
+    if (_isSearchPlaying || _isSearchLoading) {
+      _searchTimeout?.cancel();
+      _isSearchPlaying = false;
+      _isSearchLoading = false;
+      _abortFades(_searchPlayer);
+      _searchPlayer.pause();
+      changed = true;
+    }
+
+    if (!_isMuted || _isGlobalLoading) {
+      _isMuted = true;
+      _isGlobalLoading = false;
+      _globalTimeout?.cancel();
+      for (final player in _globalPlayers.values) {
+        _abortFades(player);
+        player.pause();
+      }
+      changed = true;
+    }
+
+    if (changed) {
+      notifyListeners();
+    }
   }
 
   void _handlePlaybackError(AudioPlayer player, Object error) {
@@ -263,28 +335,34 @@ class AudioProvider extends ChangeNotifier {
     if (_currentGlobalUrl == null) return;
 
     final player = _getOrCreateGlobalPlayer(_currentGlobalUrl!);
+    final needsLoading = player.source == null;
 
-    _isGlobalLoading = true;
-    _hasGlobalError = false;
-    _globalTimeout?.cancel();
-    notifyListeners();
+    if (needsLoading) {
+      _isGlobalLoading = true;
+      _hasGlobalError = false;
+      _globalTimeout?.cancel();
+      notifyListeners();
 
-    _globalTimeout = Timer(
-      const Duration(seconds: MusicConstants.audioTimeoutSeconds),
-      () {
-        if (_currentGlobalUrl != null && _isGlobalLoading) {
-          _isGlobalLoading = false;
-          _hasGlobalError = true;
-          _isMuted = true;
-          _abortFades(player);
-          player.stop();
-          notifyListeners();
-        }
-      },
-    );
+      _globalTimeout = Timer(
+        const Duration(seconds: MusicConstants.audioTimeoutSeconds),
+        () {
+          if (_currentGlobalUrl != null && _isGlobalLoading) {
+            _isGlobalLoading = false;
+            _hasGlobalError = true;
+            _isMuted = true;
+            _abortFades(player);
+            player.stop();
+            notifyListeners();
+          }
+        },
+      );
+    } else {
+      _hasGlobalError = false;
+      notifyListeners();
+    }
 
     try {
-      if (player.source == null) {
+      if (needsLoading) {
         if (fade) {
           await _fadeIn(
             player,
@@ -312,7 +390,6 @@ class AudioProvider extends ChangeNotifier {
       _globalTimeout?.cancel();
       _handlePlaybackError(player, e);
     }
-    notifyListeners();
   }
 
   Future<void> toggleMute() async {
@@ -373,12 +450,26 @@ class AudioProvider extends ChangeNotifier {
     _searchTimeout?.cancel();
 
     try {
-      if (_currentSearchUrl == url && _isSearchPlaying) {
-        _isSearchPlaying = false;
-        notifyListeners();
-        _abortFades(_searchPlayer);
-        await _searchPlayer.pause();
-        await _searchPlayer.setVolume(1.0);
+      if (_currentSearchUrl == url) {
+        if (_isSearchPlaying) {
+          _isSearchPlaying = false;
+          notifyListeners();
+          _abortFades(_searchPlayer);
+          await _searchPlayer.pause();
+          await _searchPlayer.setVolume(1.0);
+        } else {
+          _isSearchPlaying = true;
+          _hasSearchError = false;
+          notifyListeners();
+
+          await _pauseAllGlobalPlayers();
+
+          if (_searchPlayer.state == PlayerState.stopped ||
+              _searchPlayer.state == PlayerState.completed) {
+            await _searchPlayer.seek(Duration.zero);
+          }
+          await _fadeIn(_searchPlayer, () => _searchPlayer.resume());
+        }
       } else {
         _currentSearchUrl = url;
         _isSearchPlaying = false;
@@ -461,6 +552,7 @@ class AudioProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchTimeout?.cancel();
     _globalTimeout?.cancel();
     _searchPlayer.dispose();

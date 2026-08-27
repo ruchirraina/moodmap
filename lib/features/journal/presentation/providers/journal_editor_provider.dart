@@ -39,8 +39,7 @@ class JournalEditorProvider extends ChangeNotifier {
   void onTitleChanged(String title) {
     _currentTitleLength = title.length;
     if (title.length > JournalEditorConstants.titleMaxLength) {
-      _titleError =
-          'Title cannot exceed ${JournalEditorConstants.titleMaxLength} characters';
+      _titleError = JournalEditorConstants.titleLengthError;
     } else {
       _titleError = null;
     }
@@ -84,7 +83,7 @@ class JournalEditorProvider extends ChangeNotifier {
         notifyListeners();
 
         try {
-          _service.deleteEntry(existingEntry.id);
+          await _service.deleteEntry(existingEntry.id);
         } catch (e) {
           _error = JournalConstants.errorGeneric;
         }
@@ -129,7 +128,7 @@ class JournalEditorProvider extends ChangeNotifier {
     );
 
     try {
-      _service.saveEntry(entry);
+      await _service.saveEntry(entry);
       _isLoading = false;
       notifyListeners();
       return entry;

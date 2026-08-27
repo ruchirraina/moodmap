@@ -16,13 +16,6 @@ import '../providers/profile_provider.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  String _getAvatarText(String? name) {
-    if (name == null || name.trim().isEmpty) {
-      return ProfileConstants.fallbackAvatarText;
-    }
-    return name.trim()[0].toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProfileProvider>();
@@ -48,15 +41,12 @@ class ProfileScreen extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Center(
-                          child: Text(
-                            _getAvatarText(provider.currentName),
-                            style: TextStyle(
-                              fontSize: ProfileConstants.spacingLarge,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                            ),
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: ProfileConstants.fallbackIconSize,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         ),
                         if (provider.photoURL != null &&

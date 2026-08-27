@@ -106,7 +106,7 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
         width: JournalEditorConstants.loaderSize,
         height: JournalEditorConstants.loaderSize,
         child: CircularProgressIndicator(
-          strokeWidth: 2.0,
+          strokeWidth: JournalEditorConstants.loaderStrokeWidth,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
@@ -186,7 +186,7 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer,
-                            size: 16.0,
+                            size: JournalEditorConstants.iconSizeSmall,
                           ),
                         );
                       },
@@ -199,7 +199,7 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                           color: Theme.of(context)
                               .colorScheme
                               .onSecondaryContainer,
-                          size: 16.0,
+                          size: JournalEditorConstants.iconSizeSmall,
                         ),
                       ),
                     ),

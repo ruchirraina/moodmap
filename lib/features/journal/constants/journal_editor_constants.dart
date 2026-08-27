@@ -10,6 +10,7 @@ class JournalEditorConstants {
   static const double appBarLeadingWidth = 80.0;
   static const double appBarButtonVertical = 8.0;
   static const double loaderSize = 20.0;
+  static const double loaderStrokeWidth = 2.0;
   static const double errorPadding = 8.0;
   static const double errorTopPadding = 4.0;
   static const double errorFontSize = 12.0;
@@ -21,6 +22,7 @@ class JournalEditorConstants {
   static const double cardPadding = 20.0;
   static const double circleButtonSize = 48.0;
   static const double iconSizeMedium = 24.0;
+  static const double iconSizeSmall = 16.0;
   static const double buttonBorderWidth = 2.0;
   static const double musicPillCoverSize = 32.0;
   static const double spacingMedium = 16.0;
@@ -31,4 +33,6 @@ class JournalEditorConstants {
   static const String bodyHint = 'Let your thoughts wander...';
   static const String pastMidnightError =
       'Cannot save: Time shifted into a new calendar day.';
+  static const String titleLengthError =
+      'Title cannot exceed $titleMaxLength characters';
 }

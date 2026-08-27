@@ -40,4 +40,17 @@ class JournalService {
         .doc(entryId)
         .delete();
   }
+
+  Future<void> deleteAllUserEntries(String userId) async {
+    final snapshot = await _firestore
+        .collection(JournalConstants.collectionName)
+        .where(JournalConstants.fieldUserId, isEqualTo: userId)
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
 }

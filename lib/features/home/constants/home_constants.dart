@@ -21,6 +21,7 @@ class HomeConstants {
   static const double iconSizeSmall = 20.0;
   static const double iconSizeMedium = 24.0;
   static const double loaderSize = 20.0;
+  static const double loaderStrokeWidth = 2.0;
   static const double emptyStateFabHeight = 96.0;
 
   static const double calendarMarginVertical = 8.0;
