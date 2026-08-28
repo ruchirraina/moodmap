@@ -47,28 +47,12 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     });
 
-    _searchPlayer.onDurationChanged.listen((d) {
-      _durations[_searchPlayer.playerId] = d;
-    });
-
     _searchPlayer.onPositionChanged.listen((position) {
       if (position > Duration.zero && _isSearchLoading) {
         _isSearchLoading = false;
         _hasSearchError = false;
         _searchTimeout?.cancel();
         notifyListeners();
-      }
-
-      final d = _durations[_searchPlayer.playerId];
-      if (d != null && d.inMilliseconds > 0) {
-        final remaining = d.inMilliseconds - position.inMilliseconds;
-        if (remaining > 0 &&
-            remaining <= MusicConstants.loopFadeThresholdMs &&
-            _searchPlayer.state == PlayerState.playing) {
-          if (_isLoopFadingMap[_searchPlayer.playerId] != true) {
-            _triggerLoopFade(_searchPlayer);
-          }
-        }
       }
     });
 
@@ -110,7 +94,8 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
           _searchPlayer.state == PlayerState.completed) {
         await _searchPlayer.seek(Duration.zero);
       }
-      await _fadeIn(_searchPlayer, () => _searchPlayer.resume());
+      await _searchPlayer.setVolume(1.0);
+      await _searchPlayer.resume();
     } else if (_wasGlobalPlayingBeforeBackground && _currentGlobalUrl != null) {
       _isMuted = false;
       notifyListeners();
@@ -147,14 +132,16 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _handlePlaybackError(AudioPlayer player, Object error) {
+    _abortFades(player);
+    player.release();
+
     if (player == _searchPlayer) {
       _hasSearchError = true;
-      _isSearchPlaying = false;
       _isSearchLoading = false;
+      _isSearchPlaying = false;
     } else {
       _hasGlobalError = true;
       _isGlobalLoading = false;
-      _isMuted = true;
     }
     notifyListeners();
   }
@@ -231,13 +218,12 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
       await player.seek(Duration.zero);
     }, resetVolume: false);
 
-    final isActiveSearch = player == _searchPlayer && _currentSearchUrl != null;
     final isActiveGlobal =
         _globalPlayers.values.contains(player) &&
         !_isMuted &&
         _currentGlobalUrl != null;
 
-    if (isActiveSearch || isActiveGlobal) {
+    if (isActiveGlobal) {
       await _fadeIn(player, () async {
         if (player.state != PlayerState.playing) await player.resume();
       });
@@ -299,7 +285,6 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_currentGlobalUrl == url) {
         _isGlobalLoading = false;
         _hasGlobalError = true;
-        _isMuted = true;
         notifyListeners();
       }
     });
@@ -349,9 +334,8 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
           if (_currentGlobalUrl != null && _isGlobalLoading) {
             _isGlobalLoading = false;
             _hasGlobalError = true;
-            _isMuted = true;
             _abortFades(player);
-            player.stop();
+            player.release();
             notifyListeners();
           }
         },
@@ -393,23 +377,39 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> toggleMute() async {
-    _hasGlobalError = false;
+    if (_hasGlobalError) {
+      _hasGlobalError = false;
+      if (!_isMuted && _currentGlobalUrl != null) {
+        await _playGlobalTrack(fade: false);
+      } else {
+        notifyListeners();
+      }
+      return;
+    }
+
     _isMuted = !_isMuted;
 
     if (_isMuted) {
+      final wasLoading = _isGlobalLoading;
       _isGlobalLoading = false;
       _globalTimeout?.cancel();
-      for (final player in _globalPlayers.values) {
+
+      final playersList = _globalPlayers.values.toList();
+      for (final player in playersList) {
         _abortFades(player);
-        try {
-          await player.pause();
-        } catch (e) {
-          _handlePlaybackError(player, e);
-        }
-        try {
-          await player.setVolume(1.0);
-        } catch (e) {
-          _handlePlaybackError(player, e);
+
+        final isCurrentLoadingPlayer =
+            wasLoading && _globalPlayers[_currentGlobalUrl] == player;
+
+        if (isCurrentLoadingPlayer) {
+          await player.release();
+        } else {
+          try {
+            await player.pause();
+            await player.setVolume(1.0);
+          } catch (e) {
+            _handlePlaybackError(player, e);
+          }
         }
       }
       notifyListeners();
@@ -434,10 +434,8 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
     _hasGlobalError = false;
     _globalTimeout?.cancel();
 
-    await Future.wait([
-      _stopAllGlobalPlayers(),
-      _fadeOut(_searchPlayer, () => _searchPlayer.stop()),
-    ]);
+    _abortFades(_searchPlayer);
+    await Future.wait([_stopAllGlobalPlayers(), _searchPlayer.release()]);
 
     if (url != null && !_isMuted) {
       await _playGlobalTrack(fade: true);
@@ -446,17 +444,53 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  void _setupSearchTimeout(String url) {
+    _searchTimeout = Timer(
+      const Duration(seconds: MusicConstants.audioTimeoutSeconds),
+      () {
+        if (_currentSearchUrl == url && _isSearchLoading) {
+          _isSearchLoading = false;
+          _hasSearchError = true;
+          _isSearchPlaying = false;
+          _abortFades(_searchPlayer);
+          _searchPlayer.release();
+          notifyListeners();
+        }
+      },
+    );
+  }
+
   Future<void> toggleSearchTrack(String url) async {
     _searchTimeout?.cancel();
 
     try {
       if (_currentSearchUrl == url) {
-        if (_isSearchPlaying) {
+        if (_hasSearchError) {
+          _hasSearchError = false;
+          _isSearchLoading = true;
           _isSearchPlaying = false;
           notifyListeners();
+
+          _setupSearchTimeout(url);
           _abortFades(_searchPlayer);
-          await _searchPlayer.pause();
+          await _searchPlayer.release();
+          await _pauseAllGlobalPlayers();
+
           await _searchPlayer.setVolume(1.0);
+          await _searchPlayer.play(UrlSource(url));
+        } else if (_isSearchPlaying || _isSearchLoading) {
+          final wasLoading = _isSearchLoading;
+          _isSearchPlaying = false;
+          _isSearchLoading = false;
+          notifyListeners();
+
+          _abortFades(_searchPlayer);
+          if (wasLoading) {
+            await _searchPlayer.release();
+          } else {
+            await _searchPlayer.pause();
+            await _searchPlayer.setVolume(1.0);
+          }
         } else {
           _isSearchPlaying = true;
           _hasSearchError = false;
@@ -468,7 +502,9 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
               _searchPlayer.state == PlayerState.completed) {
             await _searchPlayer.seek(Duration.zero);
           }
-          await _fadeIn(_searchPlayer, () => _searchPlayer.resume());
+
+          await _searchPlayer.setVolume(1.0);
+          await _searchPlayer.resume();
         }
       } else {
         _currentSearchUrl = url;
@@ -477,26 +513,14 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
         _hasSearchError = false;
         notifyListeners();
 
-        _searchTimeout = Timer(
-          const Duration(seconds: MusicConstants.audioTimeoutSeconds),
-          () {
-            if (_currentSearchUrl == url && _isSearchLoading) {
-              _isSearchLoading = false;
-              _hasSearchError = true;
-              _isSearchPlaying = false;
-              _abortFades(_searchPlayer);
-              _searchPlayer.stop();
-              notifyListeners();
-            }
-          },
-        );
+        _setupSearchTimeout(url);
 
-        await Future.wait([
-          _fadeOut(_searchPlayer, () => _searchPlayer.stop()),
-          _pauseAllGlobalPlayers(),
-        ]);
+        _abortFades(_searchPlayer);
+        await _searchPlayer.release();
+        await _pauseAllGlobalPlayers();
 
-        await _fadeIn(_searchPlayer, () => _searchPlayer.play(UrlSource(url)));
+        await _searchPlayer.setVolume(1.0);
+        await _searchPlayer.play(UrlSource(url));
       }
     } catch (e) {
       _searchTimeout?.cancel();
@@ -510,7 +534,9 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
     _isSearchPlaying = false;
     _isSearchLoading = false;
     _hasSearchError = false;
-    await _fadeOut(_searchPlayer, () => _searchPlayer.stop());
+
+    _abortFades(_searchPlayer);
+    await _searchPlayer.release();
     notifyListeners();
   }
 
@@ -523,7 +549,8 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
     _isSearchLoading = false;
     _hasSearchError = false;
 
-    await _fadeOut(_searchPlayer, () => _searchPlayer.stop());
+    _abortFades(_searchPlayer);
+    await _searchPlayer.release();
 
     if (_currentGlobalUrl != null && !_isMuted) {
       await _playGlobalTrack(fade: true);
@@ -543,10 +570,8 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
     _isGlobalLoading = false;
     _hasGlobalError = false;
 
-    await Future.wait([
-      _fadeOut(_searchPlayer, () => _searchPlayer.stop()),
-      _stopAllGlobalPlayers(),
-    ]);
+    _abortFades(_searchPlayer);
+    await Future.wait([_searchPlayer.release(), _stopAllGlobalPlayers()]);
     notifyListeners();
   }
 
