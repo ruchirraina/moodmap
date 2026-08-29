@@ -1,17 +1,23 @@
 # MoodMap
 
-A cross-platform journal app built with Flutter and Dart, focused on logging entries, attaching music, and generating AI mood maps.
+MoodMap is a Flutter-based daily journal and reflection app designed around personal routine, mood, and music.
+
+## Overview
+
+* A journal app for capturing daily thoughts, feelings, and moments.
+* Entries are navigated through a calendar and day-by-day browsing, with the selected date and visible entry kept in sync.
+* Music can be attached to an entry through an iTunes-powered search flow, bringing in artist, title, cover art, and short preview playback.
+* Each entry can generate a mood map that blends the journal text and selected music into a poetic summary and a three-color gradient.
+
+## Product direction
+
+* The experience is intentionally calm, soft, and artistic, with Lottie motion and a polished light/dark theme.
+* The app centers on a simple daily ritual: write, attach a song, reflect, and revisit the day later.
+* Past entries are preserved as an archive, while the current day remains the place for new writing and updates.
+* Music is previewed from public iTunes sources rather than stored locally as full audio files, keeping the experience lightweight and streaming-focused.
 
 ## Architecture
-* **Framework:** Flutter (Dart)
-* **State Management:** Provider
-* **Backend & Auth:** Firebase (Google Auth, Email/Password)
-* **Local Storage:** On-device storage for offline viewing
 
-## Core Features
-* **Authentication:** Secure sign-up, sign-in, and password reset flows with inline validations and dynamic focus handling.
-* **Interactive Calendar:** Navigate past journal entries through a split-layout UI using swipe gestures. Past entries are strictly read-only.
-* **Music Integration:** Search and attach songs to daily entries. Streams a 30-second audio preview with high-resolution cover art while online. Audio fades smoothly across date changes.
-* **AI Mood Mapping:** An AI persona, "The Whimsical Sage," generates a poetic summary and a custom three-color hex gradient based on the entry's text and music. This requires a network connection and is strictly limited to one generation per day per entry.
-* **Offline Mode:** Journal text and song metadata are stored locally, allowing full read-only access to past entries without an internet connection.
-* **Custom Theme:** Dynamic light and dark modes utilizing a custom color palette and typography.
+* Built in Flutter and Dart with a feature-first structure.
+* Uses Provider for state management and Firebase for authentication and backend services.
+* Stores journal content and metadata locally for offline viewing while keeping the music experience lightweight and stream-based.
