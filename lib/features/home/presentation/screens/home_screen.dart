@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime? _focusedDay;
   DateTime? _lastSelectedDate;
+  DateTime? _lastFirstCalendarDay;
 
   @override
   void initState() {
@@ -306,6 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final firstCalendarDay = _getStartOfWeek(earliestDate);
     final today = _normalizeDate(DateTime.now());
     final lastCalendarDay = _getEndOfWeek(today);
+
+    if (_lastFirstCalendarDay != firstCalendarDay) {
+      _calendarKey = UniqueKey();
+      _lastFirstCalendarDay = firstCalendarDay;
+    }
 
     if (_lastSelectedDate != selectedDate) {
       _focusedDay = selectedDate;
