@@ -244,6 +244,123 @@ class AppRouter {
     );
   }
 
+  static CustomTransitionPage _buildAuthTransitionPage({
+    required Widget child,
+    required LocalKey key,
+    required bool isSequential,
+    required bool isPush,
+    required bool isSlideLeft,
+  }) {
+    return CustomTransitionPage(
+      key: key,
+      transitionDuration: isSequential
+          ? AppAnimations.sequentialTransitionDuration
+          : AppAnimations.slideDuration,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final slideOut =
+            _ConditionalOffsetTween(
+              begin: AppAnimations.offsetZero,
+              end: isSlideLeft
+                  ? AppAnimations.offsetLeft
+                  : AppAnimations.offsetRight,
+            ).animate(
+              CurvedAnimation(
+                parent: secondaryAnimation,
+                curve: Curves.easeOutCubic,
+                reverseCurve: Curves.easeInCubic,
+              ),
+            );
+
+        Widget primaryTransition;
+
+        if (isSequential) {
+          final bgOpacity =
+              Tween<double>(
+                begin: AppAnimations.opacityBegin,
+                end: AppAnimations.opacityEnd,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+                ),
+              );
+          final contentOpacity =
+              Tween<double>(
+                begin: AppAnimations.opacityBegin,
+                end: AppAnimations.opacityEnd,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(0.5, 1.0, curve: Curves.easeIn),
+                ),
+              );
+          primaryTransition = Stack(
+            children: [
+              FadeTransition(
+                opacity: bgOpacity,
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                ),
+              ),
+              FadeTransition(opacity: contentOpacity, child: child),
+            ],
+          );
+        } else if (isPush) {
+          final slideIn =
+              Tween<Offset>(
+                begin: isSlideLeft
+                    ? AppAnimations.offsetLeft
+                    : AppAnimations.offsetRight,
+                end: AppAnimations.offsetZero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                  reverseCurve: Curves.easeInCubic,
+                ),
+              );
+          primaryTransition = SlideTransition(position: slideIn, child: child);
+        } else {
+          final scaleIn =
+              Tween<double>(
+                begin: AppAnimations.scaleBegin,
+                end: AppAnimations.scaleEnd,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(
+                    transitionHalf,
+                    transitionFull,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+              );
+          final fadeIn =
+              Tween<double>(
+                begin: AppAnimations.opacityBegin,
+                end: AppAnimations.opacityEnd,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(
+                    transitionHalf,
+                    transitionFull,
+                    curve: Curves.easeIn,
+                  ),
+                ),
+              );
+          primaryTransition = FadeTransition(
+            opacity: fadeIn,
+            child: ScaleTransition(scale: scaleIn, child: child),
+          );
+        }
+
+        return SlideTransition(position: slideOut, child: primaryTransition);
+      },
+    );
+  }
+
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splashPath,
     routes: [
@@ -303,124 +420,12 @@ class AppRouter {
             child: const SignUpScreen(),
           );
 
-          return CustomTransitionPage(
-            key: state.pageKey,
-            transitionDuration: isSequential
-                ? AppAnimations.sequentialTransitionDuration
-                : AppAnimations.slideDuration,
+          return _buildAuthTransitionPage(
             child: child,
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  final slideOutToLeft =
-                      _ConditionalOffsetTween(
-                        begin: AppAnimations.offsetZero,
-                        end: AppAnimations.offsetLeft,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: secondaryAnimation,
-                          curve: Curves.easeOutCubic,
-                          reverseCurve: Curves.easeInCubic,
-                        ),
-                      );
-
-                  Widget primaryTransition;
-
-                  if (isSequential) {
-                    final bgOpacity =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              0.0,
-                              0.5,
-                              curve: Curves.easeOut,
-                            ),
-                          ),
-                        );
-                    final contentOpacity =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              0.5,
-                              1.0,
-                              curve: Curves.easeIn,
-                            ),
-                          ),
-                        );
-                    primaryTransition = Stack(
-                      children: [
-                        FadeTransition(
-                          opacity: bgOpacity,
-                          child: Container(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                          ),
-                        ),
-                        FadeTransition(opacity: contentOpacity, child: child),
-                      ],
-                    );
-                  } else if (isPush) {
-                    final slideInFromLeft =
-                        Tween<Offset>(
-                          begin: AppAnimations.offsetLeft,
-                          end: AppAnimations.offsetZero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                            reverseCurve: Curves.easeInCubic,
-                          ),
-                        );
-                    primaryTransition = SlideTransition(
-                      position: slideInFromLeft,
-                      child: child,
-                    );
-                  } else {
-                    final scaleIn =
-                        Tween<double>(
-                          begin: AppAnimations.scaleBegin,
-                          end: AppAnimations.scaleEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              transitionHalf,
-                              transitionFull,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          ),
-                        );
-                    final fadeIn =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              transitionHalf,
-                              transitionFull,
-                              curve: Curves.easeIn,
-                            ),
-                          ),
-                        );
-                    primaryTransition = FadeTransition(
-                      opacity: fadeIn,
-                      child: ScaleTransition(scale: scaleIn, child: child),
-                    );
-                  }
-
-                  return SlideTransition(
-                    position: slideOutToLeft,
-                    child: primaryTransition,
-                  );
-                },
+            key: state.pageKey,
+            isSequential: isSequential,
+            isPush: isPush,
+            isSlideLeft: true,
           );
         },
       ),
@@ -437,124 +442,12 @@ class AppRouter {
             child: const SignInScreen(),
           );
 
-          return CustomTransitionPage(
-            key: state.pageKey,
-            transitionDuration: isSequential
-                ? AppAnimations.sequentialTransitionDuration
-                : AppAnimations.slideDuration,
+          return _buildAuthTransitionPage(
             child: child,
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  final slideOutToRight =
-                      _ConditionalOffsetTween(
-                        begin: AppAnimations.offsetZero,
-                        end: AppAnimations.offsetRight,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: secondaryAnimation,
-                          curve: Curves.easeOutCubic,
-                          reverseCurve: Curves.easeInCubic,
-                        ),
-                      );
-
-                  Widget primaryTransition;
-
-                  if (isSequential) {
-                    final bgOpacity =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              0.0,
-                              0.5,
-                              curve: Curves.easeOut,
-                            ),
-                          ),
-                        );
-                    final contentOpacity =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              0.5,
-                              1.0,
-                              curve: Curves.easeIn,
-                            ),
-                          ),
-                        );
-                    primaryTransition = Stack(
-                      children: [
-                        FadeTransition(
-                          opacity: bgOpacity,
-                          child: Container(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                          ),
-                        ),
-                        FadeTransition(opacity: contentOpacity, child: child),
-                      ],
-                    );
-                  } else if (isPush) {
-                    final slideInFromRight =
-                        Tween<Offset>(
-                          begin: AppAnimations.offsetRight,
-                          end: AppAnimations.offsetZero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                            reverseCurve: Curves.easeInCubic,
-                          ),
-                        );
-                    primaryTransition = SlideTransition(
-                      position: slideInFromRight,
-                      child: child,
-                    );
-                  } else {
-                    final scaleIn =
-                        Tween<double>(
-                          begin: AppAnimations.scaleBegin,
-                          end: AppAnimations.scaleEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              transitionHalf,
-                              transitionFull,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          ),
-                        );
-                    final fadeIn =
-                        Tween<double>(
-                          begin: AppAnimations.opacityBegin,
-                          end: AppAnimations.opacityEnd,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: const Interval(
-                              transitionHalf,
-                              transitionFull,
-                              curve: Curves.easeIn,
-                            ),
-                          ),
-                        );
-                    primaryTransition = FadeTransition(
-                      opacity: fadeIn,
-                      child: ScaleTransition(scale: scaleIn, child: child),
-                    );
-                  }
-
-                  return SlideTransition(
-                    position: slideOutToRight,
-                    child: primaryTransition,
-                  );
-                },
+            key: state.pageKey,
+            isSequential: isSequential,
+            isPush: isPush,
+            isSlideLeft: false,
           );
         },
       ),

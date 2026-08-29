@@ -16,10 +16,12 @@ class HomeProvider extends ChangeNotifier {
   String? get photoURL => _photoURL;
 
   HomeProvider() {
-    _authSubscription = _authService.authStateChanges.listen((User? user) {
-      _displayName = user?.displayName;
-      _photoURL = user?.photoURL;
-      notifyListeners();
+    _authSubscription = _authService.userChanges.listen((User? user) {
+      if (_displayName != user?.displayName || _photoURL != user?.photoURL) {
+        _displayName = user?.displayName;
+        _photoURL = user?.photoURL;
+        notifyListeners();
+      }
     });
 
     final currentUser = _authService.currentUser;

@@ -204,6 +204,7 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
                   children: [
                     TextField(
                       controller: _titleController,
+                      textCapitalization: TextCapitalization.sentences,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -222,6 +223,12 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
                       ),
                       onChanged: (text) {
                         context.read<JournalEditorProvider>().onTitleChanged(
@@ -259,12 +266,20 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
                         controller: _bodyController,
                         maxLines: null,
                         expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        textCapitalization: TextCapitalization.sentences,
                         maxLength: JournalEditorConstants.bodyCharacterLimit,
                         maxLengthEnforcement: MaxLengthEnforcement.none,
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: const InputDecoration(
                           hintText: JournalEditorConstants.bodyHint,
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
+                          filled: false,
+                          contentPadding: EdgeInsets.zero,
                           counterText: '',
                         ),
                         onChanged: (text) {

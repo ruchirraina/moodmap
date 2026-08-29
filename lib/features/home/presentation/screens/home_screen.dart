@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double _contentOpacity = 1.0;
   bool _isTransitioning = false;
   final Key _pageViewKey = const ValueKey('initial_page_view');
+  Key _calendarKey = UniqueKey();
 
   JournalProvider? _journalProvider;
   String? _lastPlayedUrl;
@@ -69,9 +70,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) {
+    if (hour < HomeConstants.morningEndHour) {
       return HomeConstants.morningGreeting;
-    } else if (hour < 17) {
+    } else if (hour < HomeConstants.afternoonEndHour) {
       return HomeConstants.afternoonGreeting;
     } else {
       return HomeConstants.eveningGreeting;
@@ -88,12 +89,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime _getStartOfWeek(DateTime date) {
     final normalized = _normalizeDate(date);
-    final int daysToSubtract = normalized.weekday == 7 ? 0 : normalized.weekday;
+    final int daysToSubtract = normalized.weekday == HomeConstants.daysInWeek
+        ? 0
+        : normalized.weekday;
     return normalized.subtract(Duration(days: daysToSubtract));
   }
 
   DateTime _getEndOfWeek(DateTime date) {
-    return _getStartOfWeek(date).add(const Duration(days: 6));
+    return _getStartOfWeek(date)
+        .add(const Duration(days: HomeConstants.weekendOffset));
   }
 
   List<DateTime> _getNavigableDates(JournalProvider provider) {
@@ -386,135 +390,140 @@ class _HomeScreenState extends State<HomeScreen> {
                 HomeConstants.entryCardRadius,
               ),
             ),
-            child: TableCalendar(
-              key: ValueKey(firstCalendarDay),
-              firstDay: firstCalendarDay,
-              lastDay: lastCalendarDay,
-              focusedDay: _focusedDay ?? selectedDate,
-              currentDay: today,
-              startingDayOfWeek: StartingDayOfWeek.sunday,
-              selectedDayPredicate: (day) =>
-                  _normalizeDate(day) == selectedDate,
-              calendarFormat: CalendarFormat.week,
-              onPageChanged: (focusedDay) {
-                setState(() {
-                  _focusedDay = focusedDay;
-                });
-              },
-              headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                leftChevronVisible: false,
-                rightChevronVisible: false,
-                headerMargin: EdgeInsets.only(
-                  bottom: HomeConstants.spacingSmall,
-                ),
+            child: AnimatedSwitcher(
+              duration: const Duration(
+                milliseconds: HomeConstants.pageAnimationDurationMs,
               ),
-              calendarBuilders: CalendarBuilders(
-                dowBuilder: (context, day) {
-                  const weekdays = [
-                    'Mon',
-                    'Tue',
-                    'Wed',
-                    'Thu',
-                    'Fri',
-                    'Sat',
-                    'Sun',
-                  ];
-                  final weekdayStr = weekdays[day.weekday - 1];
-
-                  return Center(
-                    child: Text(
-                      weekdayStr,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              calendarStyle: CalendarStyle(
-                selectedDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.tertiary,
-                  shape: BoxShape.circle,
-                ),
-                todayDecoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                todayTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                  fontWeight: FontWeight.bold,
-                ),
-                selectedTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onTertiary,
-                  fontWeight: FontWeight.bold,
-                ),
-                defaultTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                weekendTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                disabledTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant
-                      .withValues(alpha: HomeConstants.disabledTextAlpha),
-                ),
-                outsideTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant
-                      .withValues(alpha: HomeConstants.disabledTextAlpha),
-                ),
-              ),
-              enabledDayPredicate: (day) {
-                return navigableDates.contains(_normalizeDate(day));
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                if (_isTransitioning) return;
-
-                final normalized = _normalizeDate(selectedDay);
-                if (navigableDates.contains(normalized)) {
-                  final targetIndex = navigableDates.indexOf(normalized);
-                  final currentIndex = navigableDates.indexOf(selectedDate);
-                  final indexDifference = (targetIndex - currentIndex).abs();
-
+              child: TableCalendar(
+                key: _calendarKey,
+                firstDay: firstCalendarDay,
+                lastDay: lastCalendarDay,
+                focusedDay: _focusedDay ?? selectedDate,
+                currentDay: today,
+                startingDayOfWeek: StartingDayOfWeek.sunday,
+                selectedDayPredicate: (day) =>
+                    _normalizeDate(day) == selectedDate,
+                calendarFormat: CalendarFormat.week,
+                onPageChanged: (focusedDay) {
                   setState(() {
                     _focusedDay = focusedDay;
                   });
+                },
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  leftChevronVisible: false,
+                  rightChevronVisible: false,
+                  headerMargin: EdgeInsets.only(
+                    bottom: HomeConstants.spacingSmall,
+                  ),
+                ),
+                calendarBuilders: CalendarBuilders(
+                  dowBuilder: (context, day) {
+                    const weekdays = [
+                      'Mon',
+                      'Tue',
+                      'Wed',
+                      'Thu',
+                      'Fri',
+                      'Sat',
+                      'Sun',
+                    ];
+                    final weekdayStr = weekdays[day.weekday - 1];
 
-                  if (indexDifference > 1) {
+                    return Center(
+                      child: Text(
+                        weekdayStr,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.tertiary,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  todayTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  selectedTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onTertiary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  defaultTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  weekendTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  disabledTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant
+                        .withValues(alpha: HomeConstants.disabledTextAlpha),
+                  ),
+                  outsideTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant
+                        .withValues(alpha: HomeConstants.disabledTextAlpha),
+                  ),
+                ),
+                enabledDayPredicate: (day) {
+                  return navigableDates.contains(_normalizeDate(day));
+                },
+                onDaySelected: (selectedDay, focusedDay) {
+                  if (_isTransitioning) return;
+
+                  final normalized = _normalizeDate(selectedDay);
+                  if (navigableDates.contains(normalized)) {
+                    final targetIndex = navigableDates.indexOf(normalized);
+                    final currentIndex = navigableDates.indexOf(selectedDate);
+                    final indexDifference = (targetIndex - currentIndex).abs();
+
                     setState(() {
-                      _isTransitioning = true;
-                      _contentOpacity = 0.0;
+                      _focusedDay = focusedDay;
                     });
 
-                    Future.delayed(
-                      const Duration(
-                        milliseconds: HomeConstants.pageAnimationDurationMs,
-                      ),
-                      () {
-                        if (mounted) {
-                          _pageController?.jumpToPage(targetIndex);
-                          provider.setSelectedDate(normalized);
-                          setState(() {
-                            _contentOpacity = 1.0;
-                            _isTransitioning = false;
-                          });
-                        }
-                      },
-                    );
-                  } else {
-                    provider.setSelectedDate(normalized);
-                    _pageController?.animateToPage(
-                      targetIndex,
-                      duration: const Duration(
-                        milliseconds: HomeConstants.pageAnimationDurationMs,
-                      ),
-                      curve: Curves.easeInOut,
-                    );
+                    if (indexDifference > 1) {
+                      setState(() {
+                        _isTransitioning = true;
+                        _contentOpacity = 0.0;
+                      });
+
+                      Future.delayed(
+                        const Duration(
+                          milliseconds: HomeConstants.pageAnimationDurationMs,
+                        ),
+                        () {
+                          if (mounted) {
+                            _pageController?.jumpToPage(targetIndex);
+                            provider.setSelectedDate(normalized);
+                            setState(() {
+                              _contentOpacity = 1.0;
+                              _isTransitioning = false;
+                            });
+                          }
+                        },
+                      );
+                    } else {
+                      provider.setSelectedDate(normalized);
+                      _pageController?.animateToPage(
+                        targetIndex,
+                        duration: const Duration(
+                          milliseconds: HomeConstants.pageAnimationDurationMs,
+                        ),
+                        curve: Curves.easeInOut,
+                      );
+                    }
                   }
-                }
-              },
+                },
+              ),
             ),
           ),
           Expanded(
@@ -536,6 +545,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPageChanged: (index) {
                         final newDate = navigableDates[index];
                         if (provider.selectedDate != newDate) {
+                          final oldDate = provider.selectedDate;
+                          final oldWeekStart = _getStartOfWeek(oldDate);
+                          final newWeekStart = _getStartOfWeek(newDate);
+
+                          if (newWeekStart
+                                  .difference(oldWeekStart)
+                                  .inDays
+                                  .abs() >
+                              7) {
+                            _calendarKey = UniqueKey();
+                          }
+
                           provider.setSelectedDate(newDate);
                         }
                       },
@@ -608,15 +629,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             hasError: audioProvider.hasGlobalError,
                             onToggleMute: () => audioProvider.toggleMute(),
                             onDelete: () => _showDeleteDialog(context, entry),
-                            onEdit: () {
-                              context.push(
-                                AppRoutes.journalEditorPath,
-                                extra: {
-                                  AppRoutes.argEntryDate: date,
-                                  AppRoutes.argExistingEntry: entry,
-                                },
-                              );
-                            },
                             onExpand: () {
                               context.push(
                                 AppRoutes.journalExpandedPath,

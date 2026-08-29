@@ -13,7 +13,13 @@ class ProfileService {
   Future<void> updateDisplayName(String name) async {
     final user = currentUser;
     if (user != null) {
-      await user.updateDisplayName(name);
+      try {
+        await user.updateDisplayName(name);
+      } on FirebaseAuthException catch (e) {
+        throw _handleProfileException(e);
+      } catch (e) {
+        throw ProfileConstants.genericError;
+      }
     }
   }
 
@@ -23,15 +29,31 @@ class ProfileService {
       try {
         await user.delete();
       } on FirebaseAuthException catch (e) {
-        if (e.code == ProfileConstants.firebaseErrRequiresRecentLogin) {
-          throw ProfileConstants.excRequiresRecentLogin;
-        }
-        throw e.message ?? ProfileConstants.genericError;
+        throw _handleProfileException(e);
+      } catch (e) {
+        throw ProfileConstants.genericError;
       }
     }
   }
 
   Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+    try {
+      await _firebaseAuth.signOut();
+    } on FirebaseAuthException catch (e) {
+      throw _handleProfileException(e);
+    } catch (e) {
+      throw ProfileConstants.genericError;
+    }
+  }
+
+  String _handleProfileException(FirebaseAuthException e) {
+    switch (e.code) {
+      case ProfileConstants.firebaseErrRequiresRecentLogin:
+        return ProfileConstants.excRequiresRecentLogin;
+      case ProfileConstants.firebaseErrNetwork:
+        return ProfileConstants.excNetwork;
+      default:
+        return ProfileConstants.genericError;
+    }
   }
 }

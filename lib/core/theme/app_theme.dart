@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/app_constants.dart';
 import '../constants/app_fonts.dart';
 
 class AppTheme {
@@ -35,11 +36,45 @@ class AppTheme {
     );
   }
 
-  static ThemeData get lightTheme => ThemeData(
-    useMaterial3: true,
-    scaffoldBackgroundColor: AppColors.lightBg,
-    textTheme: _buildTextTheme(Brightness.light),
-    colorScheme: const ColorScheme(
+  static InputDecorationTheme _buildInputDecorationTheme(
+    ColorScheme colorScheme,
+  ) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+      borderSide: BorderSide.none,
+    );
+    final activeBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+      borderSide: BorderSide(
+        color: colorScheme.primary,
+        width: AppConstants.inputBorderWidth,
+      ),
+    );
+    final errorBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+      borderSide: BorderSide(
+        color: colorScheme.error,
+        width: AppConstants.inputBorderWidth,
+      ),
+    );
+
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: colorScheme.surfaceContainerHigh,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.inputHorizontalPadding,
+        vertical: AppConstants.inputVerticalPadding,
+      ),
+      border: border,
+      enabledBorder: border,
+      focusedBorder: activeBorder,
+      errorBorder: errorBorder,
+      focusedErrorBorder: errorBorder,
+    );
+  }
+
+  static ThemeData get lightTheme {
+    const colorScheme = ColorScheme(
       brightness: Brightness.light,
       primary: AppColors.coreMulberry,
       onPrimary: AppColors.lightOnPrimary,
@@ -75,23 +110,30 @@ class AppTheme {
       inversePrimary: AppColors.mulberryLight,
       shadow: AppColors.shadow,
       scrim: AppColors.scrim,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.coreWisteria,
-      foregroundColor: AppColors.lightOnTertiary,
-    ),
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: AppColors.corePetal,
-      selectionColor: AppColors.petalLight.withValues(alpha: 0.5),
-      selectionHandleColor: AppColors.corePetal,
-    ),
-  );
+    );
 
-  static ThemeData get darkTheme => ThemeData(
-    useMaterial3: true,
-    scaffoldBackgroundColor: AppColors.darkBg,
-    textTheme: _buildTextTheme(Brightness.dark),
-    colorScheme: const ColorScheme(
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.lightBg,
+      textTheme: _buildTextTheme(Brightness.light),
+      colorScheme: colorScheme,
+      inputDecorationTheme: _buildInputDecorationTheme(colorScheme),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.coreWisteria,
+        foregroundColor: AppColors.lightOnTertiary,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.corePetal,
+        selectionColor: AppColors.petalLight.withValues(
+          alpha: AppConstants.selectionAlpha,
+        ),
+        selectionHandleColor: AppColors.corePetal,
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: AppColors.coreMulberry,
       onPrimary: AppColors.darkOnPrimary,
@@ -127,15 +169,25 @@ class AppTheme {
       inversePrimary: AppColors.mulberryDeep,
       shadow: AppColors.shadow,
       scrim: AppColors.scrim,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.coreWisteria,
-      foregroundColor: AppColors.darkOnTertiary,
-    ),
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: AppColors.corePetal,
-      selectionColor: AppColors.petalDeep.withValues(alpha: 0.5),
-      selectionHandleColor: AppColors.corePetal,
-    ),
-  );
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.darkBg,
+      textTheme: _buildTextTheme(Brightness.dark),
+      colorScheme: colorScheme,
+      inputDecorationTheme: _buildInputDecorationTheme(colorScheme),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.coreWisteria,
+        foregroundColor: AppColors.darkOnTertiary,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.corePetal,
+        selectionColor: AppColors.petalDeep.withValues(
+          alpha: AppConstants.selectionAlpha,
+        ),
+        selectionHandleColor: AppColors.corePetal,
+      ),
+    );
+  }
 }

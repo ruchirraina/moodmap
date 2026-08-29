@@ -17,7 +17,6 @@ class AuthConstants {
   static const double disabledTextAlpha = 0.38;
 
   static const int navigateResetDelayMs = 500;
-  static const int minimumLoadingMs = 500;
   static const int nameMaxLength = 50;
   static const int passwordMinLength = 6;
 

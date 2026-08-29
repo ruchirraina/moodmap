@@ -32,14 +32,26 @@ class HomeConstants {
   static const double disabledBorderAlpha = 0.12;
   static const double disabledTextAlpha = 0.38;
   static const double bodyLineHeight = 1.6;
+  static const double pulseScaleBegin = 1.0;
+  static const double pulseScaleEnd = 1.02;
+  static const double shadowAlpha = 0.4;
+  static const double shadowBlurRadius = 4.0;
+  static const double shadowOffsetY = 2.0;
 
   static const int titleMaxLines = 3;
   static const int bodyMaxLines = 8;
+  static const int aiSummaryMaxLines = 8;
   static const int singleLine = 1;
   static const int flexCalendar = 2;
   static const int flexEntries = 3;
   static const int pageAnimationDurationMs = 300;
   static const int dialogDelayMs = 500;
+  static const int pulseAnimationDurationMs = 2000;
+  static const int morningEndHour = 12;
+  static const int afternoonEndHour = 17;
+  static const int daysInWeek = 7;
+  static const int weekendOffset = 6;
+  static const int minGradientColors = 2;
 
   static const String morningGreeting = 'Good Morning';
   static const String afternoonGreeting = 'Good Afternoon';
@@ -53,4 +65,6 @@ class HomeConstants {
   static const String cancelText = 'Cancel';
   static const String deleteText = 'Delete';
   static const String unknownSongText = 'Unknown Song';
+  static const String aiConnectionError =
+      'Could not connect to The Whimsical Sage.';
 }

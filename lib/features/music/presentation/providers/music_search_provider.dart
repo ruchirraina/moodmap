@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/loading_utils.dart';
 import '../../constants/music_constants.dart';
 import '../../data/services/music_service.dart';
 import '../../domain/models/music_result.dart';
@@ -55,15 +56,7 @@ class MusicSearchProvider extends ChangeNotifier {
       _results = [];
     }
 
-    final elapsedTime = DateTime.now().difference(startTime);
-    if (elapsedTime.inMilliseconds < MusicConstants.minimumLoadingMs) {
-      await Future.delayed(
-        Duration(
-          milliseconds:
-              MusicConstants.minimumLoadingMs - elapsedTime.inMilliseconds,
-        ),
-      );
-    }
+    await LoadingUtils.enforceMinimumLoadTime(startTime);
 
     if (_isDisposed) return;
 

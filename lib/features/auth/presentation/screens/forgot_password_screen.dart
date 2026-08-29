@@ -40,47 +40,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  InputDecoration _buildInputDecoration(
-    BuildContext context, {
-    required String label,
-    String? errorText,
-  }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide.none,
-    );
-    final activeBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
-        width: AuthConstants.borderWidth,
-      ),
-    );
-    final errorBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.error,
-        width: AuthConstants.borderWidth,
-      ),
-    );
-
-    return InputDecoration(
-      labelText: label,
-      errorText: errorText,
-      filled: true,
-      fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AuthConstants.horizontalPadding,
-        vertical: AuthConstants.inputVerticalPadding,
-      ),
-      border: border,
-      enabledBorder: border,
-      focusedBorder: activeBorder,
-      errorBorder: errorBorder,
-      focusedErrorBorder: errorBorder,
-    );
-  }
-
   Widget _buildBulletPoint(BuildContext context, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,9 +106,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               focusNode: _emailFocusNode,
                               keyboardType: TextInputType.emailAddress,
                               enabled: !provider.isLoading,
-                              decoration: _buildInputDecoration(
-                                context,
-                                label: AuthConstants.emailLabel,
+                              decoration: InputDecoration(
+                                labelText: AuthConstants.emailLabel,
                                 errorText: provider.emailError,
                               ),
                               onChanged: (value) {

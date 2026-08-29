@@ -48,4 +48,8 @@ class ProfileConstants {
 
   static const String firebaseErrRequiresRecentLogin = 'requires-recent-login';
   static const String excRequiresRecentLogin = 'requires-recent-login';
+
+  static const String firebaseErrNetwork = 'network-request-failed';
+  static const String excNetwork =
+      'Network error. Please check your internet connection.';
 }

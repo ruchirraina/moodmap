@@ -350,47 +350,6 @@ class _EditNameDialogState extends State<_EditNameDialog> {
     super.dispose();
   }
 
-  InputDecoration _buildInputDecoration(
-    BuildContext context, {
-    required String label,
-    String? errorText,
-  }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(ProfileConstants.borderRadius),
-      borderSide: BorderSide.none,
-    );
-    final activeBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(ProfileConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
-        width: ProfileConstants.borderWidth,
-      ),
-    );
-    final errorBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(ProfileConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.error,
-        width: ProfileConstants.borderWidth,
-      ),
-    );
-
-    return InputDecoration(
-      labelText: label,
-      errorText: errorText,
-      filled: true,
-      fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: ProfileConstants.horizontalPadding,
-        vertical: ProfileConstants.inputVerticalPadding,
-      ),
-      border: border,
-      enabledBorder: border,
-      focusedBorder: activeBorder,
-      errorBorder: errorBorder,
-      focusedErrorBorder: errorBorder,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
@@ -430,9 +389,8 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                         keyboardType: TextInputType.name,
                         textCapitalization: TextCapitalization.words,
                         enabled: !provider.isLoading,
-                        decoration: _buildInputDecoration(
-                          context,
-                          label: ProfileConstants.nameLabel,
+                        decoration: InputDecoration(
+                          labelText: ProfileConstants.nameLabel,
                           errorText: provider.nameError,
                         ),
                         onChanged: (value) {
@@ -499,9 +457,10 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                                       if (provider.validateForm(
                                         _controller.text,
                                       )) {
-                                        final success = await provider
-                                            .updateName(_controller.text);
-                                        if (success && context.mounted) {
+                                        await provider.updateName(
+                                          _controller.text,
+                                        );
+                                        if (context.mounted) {
                                           Navigator.pop(context);
                                         }
                                       }

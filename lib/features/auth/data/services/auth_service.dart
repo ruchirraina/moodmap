@@ -15,6 +15,8 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
+  Stream<User?> get userChanges => _firebaseAuth.userChanges();
+
   User? get currentUser => _firebaseAuth.currentUser;
 
   Future<void> _ensureGoogleSignInInitialized() async {

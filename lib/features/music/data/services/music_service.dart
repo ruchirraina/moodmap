@@ -6,16 +6,14 @@ import '../../constants/music_constants.dart';
 import '../../domain/models/music_result.dart';
 
 class MusicService {
-  static const String _baseUrl = 'https://itunes.apple.com/search';
-
   Future<List<MusicResult>> searchSongs(String query) async {
     try {
       final uri = Uri.parse(
-        '$_baseUrl?term=${Uri.encodeComponent(query)}&entity=song&limit=20',
+        '${MusicConstants.apiBaseUrl}?term=${Uri.encodeComponent(query)}&entity=song&limit=${MusicConstants.searchResultLimit}',
       );
       final response = await http.get(
         uri,
-        headers: {'User-Agent': 'MoodMap/1.0.0'},
+        headers: {'User-Agent': MusicConstants.apiUserAgent},
       );
 
       if (response.statusCode == 200) {

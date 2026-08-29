@@ -49,29 +49,19 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
     return '${DateConstants.months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
-  void _updateEntryMusic(MusicResult? music) {
-    final updatedEntry = JournalEntry(
-      id: _currentEntry.id,
-      userId: _currentEntry.userId,
-      date: _currentEntry.date,
-      title: _currentEntry.title,
-      body: _currentEntry.body,
-      songTitle: music?.title,
-      songArtist: music?.artist,
-      songCoverUrl: music?.coverUrl,
-      songPreviewUrl: music?.previewUrl,
-      aiSummary: _currentEntry.aiSummary,
-      aiColors: _currentEntry.aiColors,
-      createdAt: _currentEntry.createdAt,
-      updatedAt: DateTime.now(),
+  Future<void> _updateEntryMusic(MusicResult? music) async {
+    final updatedEntry = await context.read<JournalProvider>().updateEntryMusic(
+      _currentEntry,
+      music,
     );
+
+    if (!mounted) return;
 
     setState(() {
       _currentEntry = updatedEntry;
     });
 
     context.read<AudioProvider>().setGlobalTrack(music?.previewUrl);
-    context.read<JournalProvider>().saveEntry(updatedEntry);
   }
 
   Widget _buildCircleButton(
@@ -180,12 +170,12 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                           height: JournalEditorConstants.musicPillCoverSize,
                           color: Theme.of(context)
                               .colorScheme
-                              .secondaryContainer,
+                              .surfaceContainerHighest,
                           child: Icon(
                             Icons.music_note_rounded,
                             color: Theme.of(context)
                                 .colorScheme
-                                .onSecondaryContainer,
+                                .onSurfaceVariant,
                             size: JournalEditorConstants.iconSizeSmall,
                           ),
                         );
@@ -193,12 +183,12 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                       errorBuilder: (context, error, stackTrace) => Container(
                         width: JournalEditorConstants.musicPillCoverSize,
                         height: JournalEditorConstants.musicPillCoverSize,
-                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                         child: Icon(
                           Icons.music_note_rounded,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSecondaryContainer,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           size: JournalEditorConstants.iconSizeSmall,
                         ),
                       ),
@@ -358,6 +348,12 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                           ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                     Divider(
@@ -370,9 +366,16 @@ class _JournalExpandedScreenState extends State<JournalExpandedScreen> {
                         readOnly: true,
                         maxLines: null,
                         expands: true,
+                        textAlignVertical: TextAlignVertical.top,
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
+                          filled: false,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
                     ),

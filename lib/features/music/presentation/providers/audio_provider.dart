@@ -244,7 +244,7 @@ class AudioProvider extends ChangeNotifier with WidgetsBindingObserver {
       return _globalPlayers[url]!;
     }
 
-    if (_globalPlayerKeys.length >= 3) {
+    if (_globalPlayerKeys.length >= MusicConstants.maxGlobalPlayers) {
       final oldest = _globalPlayerKeys.removeAt(0);
       final oldPlayer = _globalPlayers.remove(oldest);
       oldPlayer?.dispose();

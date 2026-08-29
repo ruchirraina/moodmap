@@ -29,37 +29,6 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
     super.dispose();
   }
 
-  InputDecoration _buildInputDecoration(
-    BuildContext context, {
-    required String hint,
-  }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(MusicConstants.searchBarRadius),
-      borderSide: BorderSide.none,
-    );
-    final activeBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(MusicConstants.searchBarRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
-        width: MusicConstants.borderWidth,
-      ),
-    );
-
-    return InputDecoration(
-      hintText: hint,
-      prefixIcon: const Icon(Icons.search_rounded),
-      filled: true,
-      fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: MusicConstants.horizontalPadding,
-        vertical: MusicConstants.inputVerticalPadding,
-      ),
-      border: border,
-      enabledBorder: border,
-      focusedBorder: activeBorder,
-    );
-  }
-
   Widget _buildPlayButtonIcon(
     BuildContext context,
     bool isCurrent,
@@ -182,9 +151,9 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                     controller: _searchController,
                     focusNode: _searchFocusNode,
                     textInputAction: TextInputAction.search,
-                    decoration: _buildInputDecoration(
-                      context,
-                      hint: MusicConstants.searchHint,
+                    decoration: const InputDecoration(
+                      hintText: MusicConstants.searchHint,
+                      prefixIcon: Icon(Icons.search_rounded),
                     ),
                     onChanged: (value) {
                       if (_debounce?.isActive ?? false) _debounce!.cancel();

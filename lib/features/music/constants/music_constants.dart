@@ -17,12 +17,13 @@ class MusicConstants {
   static const double emptyStateAlignmentY = -0.3;
 
   static const int audioTimeoutSeconds = 4;
-  static const int minimumLoadingMs = 1000;
   static const int fadeStepCount = 10;
   static const int fadeStepDelayMs = 30;
   static const int loopSettleDelayMs = 500;
   static const int loopFadeThresholdMs = 400;
   static const int searchDebounceMs = 500;
+  static const int maxGlobalPlayers = 3;
+  static const int searchResultLimit = 20;
 
   static const String searchScreenTitle = 'Search Music';
   static const String searchHint = 'Search for music or artists...';
@@ -32,4 +33,6 @@ class MusicConstants {
   static const String networkError = 'Network connection failed.';
   static const String unknownSongText = 'Unknown Music';
   static const String unknownArtistText = 'Unknown Artist';
+  static const String apiBaseUrl = 'https://itunes.apple.com/search';
+  static const String apiUserAgent = 'MoodMap/1.0.0';
 }

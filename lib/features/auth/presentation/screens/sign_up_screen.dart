@@ -84,49 +84,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  InputDecoration _buildInputDecoration(
-    BuildContext context, {
-    required String label,
-    Widget? suffixIcon,
-    String? errorText,
-  }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide.none,
-    );
-    final activeBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
-        width: AuthConstants.borderWidth,
-      ),
-    );
-    final errorBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AuthConstants.borderRadius),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.error,
-        width: AuthConstants.borderWidth,
-      ),
-    );
-
-    return InputDecoration(
-      labelText: label,
-      errorText: errorText,
-      filled: true,
-      fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AuthConstants.horizontalPadding,
-        vertical: AuthConstants.inputVerticalPadding,
-      ),
-      border: border,
-      enabledBorder: border,
-      focusedBorder: activeBorder,
-      errorBorder: errorBorder,
-      focusedErrorBorder: errorBorder,
-      suffixIcon: suffixIcon,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SignUpProvider>();
@@ -166,9 +123,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             focusNode: _emailFocusNode,
                             keyboardType: TextInputType.emailAddress,
                             enabled: !isAnyLoading,
-                            decoration: _buildInputDecoration(
-                              context,
-                              label: AuthConstants.emailLabel,
+                            decoration: InputDecoration(
+                              labelText: AuthConstants.emailLabel,
                               errorText: provider.emailError,
                             ),
                             onChanged: (value) {
@@ -187,9 +143,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             keyboardType: TextInputType.name,
                             textCapitalization: TextCapitalization.words,
                             enabled: !isAnyLoading,
-                            decoration: _buildInputDecoration(
-                              context,
-                              label: AuthConstants.nameLabel,
+                            decoration: InputDecoration(
+                              labelText: AuthConstants.nameLabel,
                               errorText: provider.nameError,
                             ),
                             onChanged: (value) {
@@ -207,9 +162,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             focusNode: _passwordFocusNode,
                             obscureText: !provider.isPasswordVisible,
                             enabled: !isAnyLoading,
-                            decoration: _buildInputDecoration(
-                              context,
-                              label: AuthConstants.passwordCreateLabel,
+                            decoration: InputDecoration(
+                              labelText: AuthConstants.passwordCreateLabel,
                               errorText: provider.passwordError,
                               suffixIcon: provider.isPasswordFocused
                                   ? Padding(

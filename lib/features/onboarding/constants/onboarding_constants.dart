@@ -23,7 +23,7 @@ class OnboardingConstants {
       'Add a track to any entry — the soundtrack to your day, saved right alongside it.';
   static const String slide3Title = 'AI Mood Mapping';
   static const String slide3Body =
-      'Your entries become poetic summaries and bloom into a gradient — rose, marigold, wisteria.';
+      'Allow your entries to become poetic summaries and bloom into a gradient — rose, marigold, wisteria.';
 
   static const String signUpButtonText = 'Sign Up';
   static const String existingAccountText = 'Already have an account?';

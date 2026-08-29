@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models/journal_entry.dart';
 import '../../data/services/journal_service.dart';
+import '../../data/services/ai_service.dart';
 import '../../constants/journal_constants.dart';
 import '../../../auth/data/services/auth_service.dart';
+import '../../../music/domain/models/music_result.dart';
 
 class JournalProvider extends ChangeNotifier {
   final JournalService _service = JournalService();
   final AuthService _authService = AuthService();
+  final AiService _aiService = AiService();
   StreamSubscription? _authSubscription;
   StreamSubscription? _entriesSubscription;
 
@@ -101,6 +104,69 @@ class JournalProvider extends ChangeNotifier {
       _error = JournalConstants.errorGeneric;
       notifyListeners();
     }
+  }
+
+  Future<bool> generateAiMoodMap(JournalEntry entry) async {
+    if (entry.aiSummary != null && entry.aiColors != null) return true;
+
+    final aiResult = await _aiService.generateMoodMap(
+      entry.body,
+      entry.songTitle,
+      entry.songArtist,
+    );
+
+    if (aiResult != null &&
+        aiResult['summary'] != null &&
+        aiResult['colors'] != null) {
+      final summary = aiResult['summary'] as String;
+      final colors = (aiResult['colors'] as List)
+          .map((e) => e.toString())
+          .toList();
+
+      final updatedEntry = JournalEntry(
+        id: entry.id,
+        userId: entry.userId,
+        date: entry.date,
+        title: entry.title,
+        body: entry.body,
+        songTitle: entry.songTitle,
+        songArtist: entry.songArtist,
+        songCoverUrl: entry.songCoverUrl,
+        songPreviewUrl: entry.songPreviewUrl,
+        aiSummary: summary,
+        aiColors: colors,
+        createdAt: entry.createdAt,
+        updatedAt: DateTime.now(),
+      );
+
+      await saveEntry(updatedEntry);
+      return true;
+    }
+    return false;
+  }
+
+  Future<JournalEntry> updateEntryMusic(
+    JournalEntry entry,
+    MusicResult? music,
+  ) async {
+    final updatedEntry = JournalEntry(
+      id: entry.id,
+      userId: entry.userId,
+      date: entry.date,
+      title: entry.title,
+      body: entry.body,
+      songTitle: music?.title,
+      songArtist: music?.artist,
+      songCoverUrl: music?.coverUrl,
+      songPreviewUrl: music?.previewUrl,
+      aiSummary: entry.aiSummary,
+      aiColors: entry.aiColors,
+      createdAt: entry.createdAt,
+      updatedAt: DateTime.now(),
+    );
+
+    await saveEntry(updatedEntry);
+    return updatedEntry;
   }
 
   @override

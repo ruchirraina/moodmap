@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/loading_utils.dart';
+import '../../../auth/data/services/auth_service.dart';
+import '../../../journal/data/services/journal_service.dart';
 import '../../constants/profile_constants.dart';
 import '../../data/services/profile_service.dart';
-import '../../../journal/data/services/journal_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final ProfileService _profileService = ProfileService();
   final JournalService _journalService = JournalService();
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   bool _isNameFocused = false;
@@ -87,19 +90,21 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    final startTime = DateTime.now();
     bool isSuccess = false;
+
     try {
       await _profileService.updateDisplayName(newName.trim());
       await _profileService.currentUser?.reload();
       _cachedName = newName.trim();
       isSuccess = true;
     } catch (e) {
-      _error = ProfileConstants.genericError;
+      _error = e.toString();
     }
 
-    if (!isSuccess) {
-      _isLoading = false;
-    }
+    await LoadingUtils.enforceMinimumLoadTime(startTime);
+
+    _isLoading = false;
     notifyListeners();
     return isSuccess;
   }
@@ -107,7 +112,17 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> signOut() async {
     _isLoading = true;
     notifyListeners();
-    await _profileService.signOut();
+
+    final startTime = DateTime.now();
+
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      _error = e.toString();
+    }
+
+    await LoadingUtils.enforceMinimumLoadTime(startTime);
+
     _isLoading = false;
     notifyListeners();
   }
@@ -117,26 +132,28 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    final startTime = DateTime.now();
     bool isSuccess = false;
+
     try {
       final userId = _profileService.currentUser?.uid;
+      await _profileService.deleteAccount();
       if (userId != null) {
         await _journalService.deleteAllUserEntries(userId);
       }
-      await _profileService.deleteAccount();
       isSuccess = true;
     } catch (e) {
       if (e.toString() == ProfileConstants.excRequiresRecentLogin) {
         _error = ProfileConstants.reauthRequiredError;
       } else {
-        _error = ProfileConstants.genericError;
+        _error = e.toString();
       }
     }
 
-    if (!isSuccess) {
-      _isLoading = false;
-      notifyListeners();
-    }
+    await LoadingUtils.enforceMinimumLoadTime(startTime);
+
+    _isLoading = false;
+    notifyListeners();
     return isSuccess;
   }
 

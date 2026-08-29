@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/loading_utils.dart';
 import '../../constants/auth_constants.dart';
 import '../../data/services/auth_service.dart';
 
@@ -75,15 +76,7 @@ class ForgotPasswordProvider extends ChangeNotifier {
       }
     }
 
-    final elapsedTime = DateTime.now().difference(startTime);
-    if (elapsedTime.inMilliseconds < AuthConstants.minimumLoadingMs) {
-      await Future.delayed(
-        Duration(
-          milliseconds:
-              AuthConstants.minimumLoadingMs - elapsedTime.inMilliseconds,
-        ),
-      );
-    }
+    await LoadingUtils.enforceMinimumLoadTime(startTime);
 
     _isLoading = false;
     notifyListeners();
