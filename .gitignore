@@ -49,6 +49,9 @@ android/build/
 # Widget Preview related
 .widget_preview/
 
+*.jks
+key.properties
+
 # Project Overview and the script that generates it and other non-essential files
 generate_context.py
 workspace_context.md
