@@ -382,272 +382,277 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(
-              horizontal: HomeConstants.horizontalPadding,
-              vertical: HomeConstants.calendarMarginVertical,
-            ),
-            padding: const EdgeInsets.all(HomeConstants.calendarPadding),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(
-                HomeConstants.entryCardRadius,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(
+                horizontal: HomeConstants.horizontalPadding,
+                vertical: HomeConstants.calendarMarginVertical,
               ),
-            ),
-            child: AnimatedSwitcher(
-              duration: const Duration(
-                milliseconds: HomeConstants.pageAnimationDurationMs,
+              padding: const EdgeInsets.all(HomeConstants.calendarPadding),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(
+                  HomeConstants.entryCardRadius,
+                ),
               ),
-              child: TableCalendar(
-                key: _calendarKey,
-                firstDay: firstCalendarDay,
-                lastDay: lastCalendarDay,
-                focusedDay: _focusedDay ?? selectedDate,
-                currentDay: today,
-                startingDayOfWeek: StartingDayOfWeek.sunday,
-                selectedDayPredicate: (day) =>
-                    _normalizeDate(day) == selectedDate,
-                calendarFormat: CalendarFormat.week,
-                onPageChanged: (focusedDay) {
-                  setState(() {
-                    _focusedDay = focusedDay;
-                  });
-                },
-                headerStyle: const HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  leftChevronVisible: false,
-                  rightChevronVisible: false,
-                  headerMargin: EdgeInsets.only(
-                    bottom: HomeConstants.spacingSmall,
-                  ),
+              child: AnimatedSwitcher(
+                duration: const Duration(
+                  milliseconds: HomeConstants.pageAnimationDurationMs,
                 ),
-                calendarBuilders: CalendarBuilders(
-                  dowBuilder: (context, day) {
-                    const weekdays = [
-                      'Mon',
-                      'Tue',
-                      'Wed',
-                      'Thu',
-                      'Fri',
-                      'Sat',
-                      'Sun',
-                    ];
-                    final weekdayStr = weekdays[day.weekday - 1];
-
-                    return Center(
-                      child: Text(
-                        weekdayStr,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary,
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  todayTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  selectedTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onTertiary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  defaultTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  weekendTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  disabledTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant
-                        .withValues(alpha: HomeConstants.disabledTextAlpha),
-                  ),
-                  outsideTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant
-                        .withValues(alpha: HomeConstants.disabledTextAlpha),
-                  ),
-                ),
-                enabledDayPredicate: (day) {
-                  return navigableDates.contains(_normalizeDate(day));
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  if (_isTransitioning) return;
-
-                  final normalized = _normalizeDate(selectedDay);
-                  if (navigableDates.contains(normalized)) {
-                    final targetIndex = navigableDates.indexOf(normalized);
-                    final currentIndex = navigableDates.indexOf(selectedDate);
-                    final indexDifference = (targetIndex - currentIndex).abs();
-
+                child: TableCalendar(
+                  key: _calendarKey,
+                  firstDay: firstCalendarDay,
+                  lastDay: lastCalendarDay,
+                  focusedDay: _focusedDay ?? selectedDate,
+                  currentDay: today,
+                  startingDayOfWeek: StartingDayOfWeek.sunday,
+                  selectedDayPredicate: (day) =>
+                      _normalizeDate(day) == selectedDate,
+                  calendarFormat: CalendarFormat.week,
+                  onPageChanged: (focusedDay) {
                     setState(() {
                       _focusedDay = focusedDay;
                     });
-
-                    if (indexDifference > 1) {
-                      setState(() {
-                        _isTransitioning = true;
-                        _contentOpacity = 0.0;
-                      });
-
-                      Future.delayed(
-                        const Duration(
-                          milliseconds: HomeConstants.pageAnimationDurationMs,
-                        ),
-                        () {
-                          if (mounted) {
-                            _pageController?.jumpToPage(targetIndex);
-                            provider.setSelectedDate(normalized);
-                            setState(() {
-                              _contentOpacity = 1.0;
-                              _isTransitioning = false;
-                            });
-                          }
-                        },
-                      );
-                    } else {
-                      provider.setSelectedDate(normalized);
-                      _pageController?.animateToPage(
-                        targetIndex,
-                        duration: const Duration(
-                          milliseconds: HomeConstants.pageAnimationDurationMs,
-                        ),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  }
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: !provider.isInitialized || _pageController == null
-                ? _buildEmptyStateLoader(context)
-                : AnimatedOpacity(
-                    opacity: _contentOpacity,
-                    duration: const Duration(
-                      milliseconds: HomeConstants.pageAnimationDurationMs,
-                    ),
-                    curve: Curves.easeInOut,
-                    child: PageView.builder(
-                      key: _pageViewKey,
-                      controller: _pageController,
-                      physics: _isTransitioning
-                          ? const NeverScrollableScrollPhysics()
-                          : const BouncingScrollPhysics(),
-                      itemCount: navigableDates.length,
-                      onPageChanged: (index) {
-                        final newDate = navigableDates[index];
-                        if (provider.selectedDate != newDate) {
-                          final oldDate = provider.selectedDate;
-                          final oldWeekStart = _getStartOfWeek(oldDate);
-                          final newWeekStart = _getStartOfWeek(newDate);
-
-                          if (newWeekStart
-                                  .difference(oldWeekStart)
-                                  .inDays
-                                  .abs() >
-                              7) {
-                            _calendarKey = UniqueKey();
-                          }
-
-                          provider.setSelectedDate(newDate);
-                        }
-                      },
-                      itemBuilder: (context, index) {
-                        final date = navigableDates[index];
-                        final isToday = date == today;
-                        final entry = provider.entries
-                            .where((e) => _normalizeDate(e.date) == date)
-                            .firstOrNull;
-
-                        if (entry == null && isToday) {
-                          return Align(
-                            alignment: const Alignment(
-                              0.0,
-                              HomeConstants.emptyStateAlignmentY,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  HomeConstants.emptyTodayText,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium,
-                                ),
-                                const SizedBox(
-                                  height: HomeConstants.spacingMedium,
-                                ),
-                                SizedBox(
-                                  height: HomeConstants.emptyStateFabHeight,
-                                  width: HomeConstants.emptyStateFabHeight,
-                                  child: Center(
-                                    child: FloatingActionButton.large(
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                      foregroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      onPressed: () {
-                                        context.push(
-                                          AppRoutes.journalEditorPath,
-                                          extra: {AppRoutes.argEntryDate: date},
-                                        );
-                                      },
-                                      child: const Icon(Icons.add),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (entry == null) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: HomeConstants.spacingMedium,
-                          ),
-                          child: JournalCard(
-                            entry: entry,
-                            isMuted: audioProvider.isMuted,
-                            isLoading: audioProvider.isGlobalLoading,
-                            hasError: audioProvider.hasGlobalError,
-                            onToggleMute: () => audioProvider.toggleMute(),
-                            onDelete: () => _showDeleteDialog(context, entry),
-                            onExpand: () {
-                              context.push(
-                                AppRoutes.journalExpandedPath,
-                                extra: {AppRoutes.argExistingEntry: entry},
-                              );
-                            },
-                          ),
-                        );
-                      },
+                  },
+                  headerStyle: const HeaderStyle(
+                    formatButtonVisible: false,
+                    titleCentered: true,
+                    leftChevronVisible: false,
+                    rightChevronVisible: false,
+                    headerMargin: EdgeInsets.only(
+                      bottom: HomeConstants.spacingSmall,
                     ),
                   ),
-          ),
-        ],
+                  calendarBuilders: CalendarBuilders(
+                    dowBuilder: (context, day) {
+                      const weekdays = [
+                        'Mon',
+                        'Tue',
+                        'Wed',
+                        'Thu',
+                        'Fri',
+                        'Sat',
+                        'Sun',
+                      ];
+                      final weekdayStr = weekdays[day.weekday - 1];
+
+                      return Center(
+                        child: Text(
+                          weekdayStr,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  calendarStyle: CalendarStyle(
+                    selectedDecoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.tertiary,
+                      shape: BoxShape.circle,
+                    ),
+                    todayDecoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    todayTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    selectedTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onTertiary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    defaultTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    weekendTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    disabledTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant
+                          .withValues(alpha: HomeConstants.disabledTextAlpha),
+                    ),
+                    outsideTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant
+                          .withValues(alpha: HomeConstants.disabledTextAlpha),
+                    ),
+                  ),
+                  enabledDayPredicate: (day) {
+                    return navigableDates.contains(_normalizeDate(day));
+                  },
+                  onDaySelected: (selectedDay, focusedDay) {
+                    if (_isTransitioning) return;
+
+                    final normalized = _normalizeDate(selectedDay);
+                    if (navigableDates.contains(normalized)) {
+                      final targetIndex = navigableDates.indexOf(normalized);
+                      final currentIndex = navigableDates.indexOf(selectedDate);
+                      final indexDifference = (targetIndex - currentIndex)
+                          .abs();
+
+                      setState(() {
+                        _focusedDay = focusedDay;
+                      });
+
+                      if (indexDifference > 1) {
+                        setState(() {
+                          _isTransitioning = true;
+                          _contentOpacity = 0.0;
+                        });
+
+                        Future.delayed(
+                          const Duration(
+                            milliseconds: HomeConstants.pageAnimationDurationMs,
+                          ),
+                          () {
+                            if (mounted) {
+                              _pageController?.jumpToPage(targetIndex);
+                              provider.setSelectedDate(normalized);
+                              setState(() {
+                                _contentOpacity = 1.0;
+                                _isTransitioning = false;
+                              });
+                            }
+                          },
+                        );
+                      } else {
+                        provider.setSelectedDate(normalized);
+                        _pageController?.animateToPage(
+                          targetIndex,
+                          duration: const Duration(
+                            milliseconds: HomeConstants.pageAnimationDurationMs,
+                          ),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: !provider.isInitialized || _pageController == null
+                  ? _buildEmptyStateLoader(context)
+                  : AnimatedOpacity(
+                      opacity: _contentOpacity,
+                      duration: const Duration(
+                        milliseconds: HomeConstants.pageAnimationDurationMs,
+                      ),
+                      curve: Curves.easeInOut,
+                      child: PageView.builder(
+                        key: _pageViewKey,
+                        controller: _pageController,
+                        physics: _isTransitioning
+                            ? const NeverScrollableScrollPhysics()
+                            : const BouncingScrollPhysics(),
+                        itemCount: navigableDates.length,
+                        onPageChanged: (index) {
+                          final newDate = navigableDates[index];
+                          if (provider.selectedDate != newDate) {
+                            final oldDate = provider.selectedDate;
+                            final oldWeekStart = _getStartOfWeek(oldDate);
+                            final newWeekStart = _getStartOfWeek(newDate);
+
+                            if (newWeekStart
+                                    .difference(oldWeekStart)
+                                    .inDays
+                                    .abs() >
+                                7) {
+                              _calendarKey = UniqueKey();
+                            }
+
+                            provider.setSelectedDate(newDate);
+                          }
+                        },
+                        itemBuilder: (context, index) {
+                          final date = navigableDates[index];
+                          final isToday = date == today;
+                          final entry = provider.entries
+                              .where((e) => _normalizeDate(e.date) == date)
+                              .firstOrNull;
+
+                          if (entry == null && isToday) {
+                            return Align(
+                              alignment: const Alignment(
+                                0.0,
+                                HomeConstants.emptyStateAlignmentY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    HomeConstants.emptyTodayText,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium,
+                                  ),
+                                  const SizedBox(
+                                    height: HomeConstants.spacingMedium,
+                                  ),
+                                  SizedBox(
+                                    height: HomeConstants.emptyStateFabHeight,
+                                    width: HomeConstants.emptyStateFabHeight,
+                                    child: Center(
+                                      child: FloatingActionButton.large(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                        onPressed: () {
+                                          context.push(
+                                            AppRoutes.journalEditorPath,
+                                            extra: {
+                                              AppRoutes.argEntryDate: date,
+                                            },
+                                          );
+                                        },
+                                        child: const Icon(Icons.add),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          if (entry == null) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: HomeConstants.spacingMedium,
+                            ),
+                            child: JournalCard(
+                              entry: entry,
+                              isMuted: audioProvider.isMuted,
+                              isLoading: audioProvider.isGlobalLoading,
+                              hasError: audioProvider.hasGlobalError,
+                              onToggleMute: () => audioProvider.toggleMute(),
+                              onDelete: () => _showDeleteDialog(context, entry),
+                              onExpand: () {
+                                context.push(
+                                  AppRoutes.journalExpandedPath,
+                                  extra: {AppRoutes.argExistingEntry: entry},
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

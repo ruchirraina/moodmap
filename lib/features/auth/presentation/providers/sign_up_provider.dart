@@ -28,7 +28,7 @@ class SignUpProvider extends ChangeNotifier {
   bool get isGoogleLoading => _isGoogleLoading;
 
   void onEmailFocusChanged(bool hasFocus, String value) {
-    if (_isEmailLoading || _isGoogleLoading) return;
+    if ((_isEmailLoading || _isGoogleLoading) && hasFocus) return;
 
     final lostFocus = _isEmailFocused && !hasFocus;
     _isEmailFocused = hasFocus;
@@ -40,7 +40,7 @@ class SignUpProvider extends ChangeNotifier {
   }
 
   void onNameFocusChanged(bool hasFocus, String value) {
-    if (_isEmailLoading || _isGoogleLoading) return;
+    if ((_isEmailLoading || _isGoogleLoading) && hasFocus) return;
 
     final lostFocus = _isNameFocused && !hasFocus;
     _isNameFocused = hasFocus;
@@ -52,7 +52,7 @@ class SignUpProvider extends ChangeNotifier {
   }
 
   void onPasswordFocusChanged(bool hasFocus, String value) {
-    if (_isEmailLoading || _isGoogleLoading) return;
+    if ((_isEmailLoading || _isGoogleLoading) && hasFocus) return;
 
     final lostFocus = _isPasswordFocused && !hasFocus;
     _isPasswordFocused = hasFocus;

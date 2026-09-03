@@ -19,7 +19,7 @@ class ForgotPasswordProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   void onEmailFocusChanged(bool hasFocus, String value) {
-    if (_isLoading) return;
+    if (_isLoading && hasFocus) return;
 
     final lostFocus = _isEmailFocused && !hasFocus;
     _isEmailFocused = hasFocus;

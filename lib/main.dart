@@ -21,12 +21,12 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: kDebugMode
-        ? AndroidDebugProvider()
-        : AndroidPlayIntegrityProvider(),
-    providerApple: kDebugMode ? AppleDebugProvider() : AppleAppAttestProvider(),
-  );
+  if (kDebugMode) {
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: AndroidDebugProvider(),
+      providerApple: AppleDebugProvider(),
+    );
+  }
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final prefs = await SharedPreferences.getInstance();
